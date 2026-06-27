@@ -18,6 +18,7 @@ class AppRoutes {
   static const String coolingOff = '/cooling-off';
   static const String contractAnalysis = '/contract-analysis';
   static const String family = '/family';
+  static const String familyAlert = '/family-alert';
   static const String settings = '/settings';
 
   static Map<String, WidgetBuilder> get routes => {

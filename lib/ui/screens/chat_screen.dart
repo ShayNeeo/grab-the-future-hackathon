@@ -193,7 +193,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 onPressed: () => ref.read(p.chatProvider.notifier).reset(),
                 icon: const Icon(Icons.refresh_rounded, size: 26),
                 tooltip: 'Bắt đầu cuộc trò chuyện mới',
-                semanticLabel: 'Làm mới cuộc trò chuyện',
                 style: IconButton.styleFrom(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14))),
@@ -558,7 +557,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     icon: const Icon(Icons.camera_alt_rounded,
                         color: AppColors.shieldTeal, size: 26),
                     tooltip: 'Chụp ảnh',
-                    semanticLabel: 'Chụp ảnh bằng camera',
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),
@@ -572,7 +570,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     icon: const Icon(Icons.photo_library_rounded,
                         color: AppColors.shieldTeal, size: 26),
                     tooltip: 'Chọn ảnh',
-                    semanticLabel: 'Chọn ảnh từ thư viện',
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),
@@ -586,7 +583,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     icon: const Icon(Icons.mic_rounded,
                         color: AppColors.shieldTeal, size: 26),
                     tooltip: 'Ghi âm',
-                    semanticLabel: 'Ghi âm giọng nói',
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),

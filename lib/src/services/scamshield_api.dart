@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:scamshield/core/constants/app_constants.dart';
 import 'package:scamshield/src/models/analysis_request.dart';
 import 'package:scamshield/src/models/analysis_response.dart';
+import 'package:scamshield/src/models/family_alert_response.dart';
 
 class ScamShieldApi {
   final Dio _dio = Dio(BaseOptions(
@@ -31,5 +32,20 @@ class ScamShieldApi {
       'image_base64': imageBase64,
     });
     return AnalysisResponse.fromJson(resp.data as Map<String, dynamic>);
+  }
+
+  Future<FamilyAlertResponse> generateFamilyAlert(
+      AnalysisResponse analysis) async {
+    final resp = await _dio.post('/family-alert', data: {
+      'risk_level': analysis.riskLevel.name,
+      'case_type': analysis.caseType,
+      'stage': analysis.stage,
+      'red_flags': analysis.redFlags
+          .map((f) => {'type': f.type, 'detail': f.detail})
+          .toList(),
+      'manipulation_tactics': analysis.manipulationTactics,
+      'next_actions': analysis.nextActions,
+    });
+    return FamilyAlertResponse.fromJson(resp.data as Map<String, dynamic>);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:scamshield/app/routes.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/src/models/analysis_response.dart';
 import 'package:scamshield/ui/widgets/risk_badge.dart';
@@ -235,7 +236,11 @@ class ScamResultCardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () {},
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  AppRoutes.familyAlert,
+                  arguments: analysis,
+                ),
                 child: Text(
                   '📤 Gửi cho người thân',
                   style: GoogleFonts.beVietnamPro(

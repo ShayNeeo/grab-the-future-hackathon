@@ -33,3 +33,21 @@ class AnalysisResponse(BaseModel):
     cooling_off_hours: int = 48
     suggested_reply: str
     follow_up_questions: list[str] = []
+
+
+class FamilyAlertRequest(BaseModel):
+    risk_level: Literal["critical", "high", "medium", "low"]
+    case_type: str
+    stage: str
+    red_flags: list[RedFlag]
+    manipulation_tactics: list[str]
+    next_actions: list[str]
+
+
+class FamilyAlertResponse(BaseModel):
+    situation_summary: str
+    risk_level: Literal["critical", "high", "medium", "low"]
+    main_risks: list[str]
+    do_not_say: str
+    do_say: str
+    immediate_actions: list[str]
