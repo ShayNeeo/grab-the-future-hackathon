@@ -546,7 +546,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } else if (text.contains('contract') || text.contains('hợp đồng') || text.contains('điều khoản')) {
       return 'AI đang quét chi tiết các điều khoản hợp đồng/tài liệu...';
     }
-    return 'Lá chắn ScamShield đang kiểm tra độ an toàn cho bác...';
+    return 'Lá chắn Justful đang kiểm tra độ an toàn cho bác...';
   }
 
   /// Renders follow-up questions as tappable suggestion chips.

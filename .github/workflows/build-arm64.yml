@@ -80,7 +80,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: scamshield-arm64-v8a
+          name: justful-arm64-v8a
           path: ${{ env.APK_PATH }}
           retention-days: 30
           if-no-files-found: error
@@ -89,9 +89,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          name: "ScamShield ${{ github.ref_name }}"
+          name: "Justful ${{ github.ref_name }}"
           body: |
-            ## ScamShield ${{ github.ref_name }}
+            ## Justful ${{ github.ref_name }}
 
             ### APK Details
             | Detail | Value |

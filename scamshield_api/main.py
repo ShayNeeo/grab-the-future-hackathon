@@ -5,7 +5,7 @@ from app.routers.analyze import router
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="ScamShield API", version="1.0.0")
+app = FastAPI(title="Justful API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

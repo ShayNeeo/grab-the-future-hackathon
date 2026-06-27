@@ -1,4 +1,4 @@
-# scamshield
+# Justful
 
 A new Flutter project.
 

@@ -1,12 +1,12 @@
-# Skill: ScamShield Project Context
+# Skill: Justful Project Context
 
 ## When to Use
 
-Use this skill when working on the ScamShield (Lá Chắn Lừa Đảo) Flutter project — an AI-powered scam detection app for elderly Vietnamese users. Covers project structure, design system, build pipeline, and deployment.
+Use this skill when working on the Justful (Lá Chắn Lừa Đảo) Flutter project — an AI-powered scam detection app for elderly Vietnamese users. Covers project structure, design system, build pipeline, and deployment.
 
 ## Project Overview
 
-- **App:** ScamShield — agentic AI chatbot that analyzes suspicious messages, images, voice notes, and contracts to detect scams
+- **App:** Justful — agentic AI chatbot that analyzes suspicious messages, images, voice notes, and contracts to detect scams
 - **Platform:** Flutter 3.44.4 / Dart 3.12.2 / Material 3
 - **Target audience:** Elderly users (60–80) in Vietnam + their adult children as family guardians
 - **Repo:** `https://github.com/ShayNeeo/grab-the-future-hackathon`
@@ -133,7 +133,7 @@ Splash → Onboarding (3 slides) → Home Dashboard
 
 ## Working with This Codebase
 
-- Always use `package:scamshield/...` absolute imports (not relative `../`)
+- Always use `package:justful/...` absolute imports (not relative `../`)
 - Theme tokens in `core/theme/` — never hardcode hex colors in screens
 - Shared widgets in `ui/widgets/` — extract reusable components
 - `src/` is reserved for teammates (models, services, repos, providers)
