@@ -27,6 +27,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _speechAvailable = false;
   bool _isListening = false;
+  bool _speechInitialized = false;
   String _transcribedWords = '';
   bool _useVoiceMode = true;
 
@@ -37,6 +38,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     time: '',
   );
 
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final xFile = await _picker.pickImage(
         source: source, imageQuality: 70, maxWidth: 1024);
@@ -46,7 +53,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _initSpeech() async {
-    if (_speechAvailable) return;
+    if (_speechInitialized) return;
+    _speechInitialized = true;
     try {
       final available = await _speech.initialize(
         onError: (val) {
@@ -68,48 +76,72 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
     } catch (e) {
       debugPrint('Speech initialization failed: $e');
+      if (!mounted) return;
+      setState(() {
+        _speechAvailable = false;
+      });
+    }
+  }
+
+  void _toggleListening() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
     }
   }
 
   void _startListening() async {
-    await _initSpeech();
-    if (!mounted) return;
-    if (_speechAvailable) {
-      setState(() {
-        _isListening = true;
-        _transcribedWords = '';
-      });
-      
-      try {
-        await _speech.listen(
-          onResult: (val) {
-            if (!mounted) return;
-            setState(() {
-              _transcribedWords = val.recognizedWords;
-            });
-          },
-          listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
-        );
-      } catch (e) {
-        debugPrint('Speech listen error: $e');
-      }
-    } else {
+    if (!_speechAvailable) {
+      // Re-attempt init in case permission was granted since last try
+      _speechInitialized = false;
+      await _initSpeech();
+      if (!mounted) return;
+    }
+    if (!_speechAvailable) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro.'),
+          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro trong cài đặt.'),
           backgroundColor: Colors.redAccent,
         ),
       );
+      return;
+    }
+    
+    setState(() {
+      _isListening = true;
+      _transcribedWords = '';
+    });
+    
+    try {
+      await _speech.listen(
+        onResult: (val) {
+          if (!mounted) return;
+          setState(() {
+            _transcribedWords = val.recognizedWords;
+          });
+        },
+        listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
+      );
+    } catch (e) {
+      debugPrint('Speech listen error: $e');
+      if (!mounted) return;
+      setState(() => _isListening = false);
     }
   }
 
   void _stopListening() async {
     try {
-      await _speech.stop();
+      if (_speech.isListening) {
+        await _speech.stop();
+      }
     } catch (e) {
       debugPrint('Speech stop error: $e');
     }
-    setState(() => _isListening = false);
+    if (mounted) {
+      setState(() => _isListening = false);
+    }
   }
 
 
@@ -140,7 +172,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    _speech.cancel();
+    try {
+      _speech.cancel();
+    } catch (_) {}
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -842,13 +876,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    if (_isListening) {
-                      _stopListening();
-                    } else {
-                      _startListening();
-                    }
-                  },
+                  onTap: _toggleListening,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 160,
