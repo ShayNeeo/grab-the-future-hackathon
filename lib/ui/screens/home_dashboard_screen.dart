@@ -7,6 +7,13 @@ import 'package:scamshield/ui/widgets/stat_card.dart';
 class HomeDashboardScreen extends StatelessWidget {
   const HomeDashboardScreen({super.key});
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Chào buổi sáng';
+    if (hour < 18) return 'Chào buổi chiều';
+    return 'Chào buổi tối';
+  }
+
   @override
   Widget build(BuildContext context) {
     return BottomNavShell(
@@ -18,12 +25,19 @@ class HomeDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              // ── Teal Header ──
+              // ── Teal Header with time-aware greeting ──
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.shieldTeal,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.shieldTeal,
+                      Color(0xFF1A9DAA),
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -33,7 +47,7 @@ class HomeDashboardScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Xin chào, Bà Lan 👋',
+                            '${_getGreeting()}, Bà Lan',
                             style: GoogleFonts.beVietnamPro(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
@@ -52,22 +66,85 @@ class HomeDashboardScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Notification bell
-                    SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        style: IconButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                    // Notification bell with accessibility
+                    Semantics(
+                      label: 'Thông báo',
+                      button: true,
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.notifications_outlined,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          tooltip: 'Xem thông báo',
+                          style: IconButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                         ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // ── Daily Safety Tip Card ──
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.shieldTealBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.shieldTeal.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.shieldTeal.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.lightbulb_rounded,
+                        size: 26,
+                        color: AppColors.shieldTeal,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Mẹo an toàn hôm nay',
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.shieldTeal,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Không bao giờ chuyển tiền cho người lạ qua điện thoại — hãy hỏi người thân trước!',
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textPrimary,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -76,81 +153,92 @@ class HomeDashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // ── Quick Action Card ──
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/chat'),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.shieldTeal,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.shieldTeal.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Shield icon with pulse ring
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            width: 3,
+              Semantics(
+                label: 'Kiểm tra ngay — Gửi ảnh, tin nhắn hoặc ghi âm để kiểm tra lừa đảo',
+                button: true,
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/chat'),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.shieldTeal,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shieldTeal.withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Shield icon with animated pulse ring
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 3,
+                            ),
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
+                            child: const Icon(
+                              Icons.shield_rounded,
+                              size: 48,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                        child: const Icon(
-                          Icons.shield_rounded,
-                          size: 44,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Kiểm tra ngay',
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Gửi ảnh, tin nhắn hoặc ghi âm',
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // Action chips
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _ActionChip(
-                            icon: Icons.camera_alt_rounded,
-                            label: 'Ảnh',
+                        const SizedBox(height: 16),
+                        Text(
+                          'Kiểm tra ngay',
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          const SizedBox(width: 12),
-                          _ActionChip(
-                            icon: Icons.mic_rounded,
-                            label: 'Ghi âm',
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Gửi ảnh, tin nhắn hoặc ghi âm',
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white.withValues(alpha: 0.85),
                           ),
-                          const SizedBox(width: 12),
-                          _ActionChip(
-                            icon: Icons.text_fields_rounded,
-                            label: 'Văn bản',
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Bigger action chips with labels
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _ActionChip(
+                              icon: Icons.camera_alt_rounded,
+                              label: 'Ảnh',
+                            ),
+                            const SizedBox(width: 12),
+                            _ActionChip(
+                              icon: Icons.mic_rounded,
+                              label: 'Ghi âm',
+                            ),
+                            const SizedBox(width: 12),
+                            _ActionChip(
+                              icon: Icons.text_fields_rounded,
+                              label: 'Văn bản',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -229,26 +317,30 @@ class _ActionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 20, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.beVietnamPro(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
+    return Semantics(
+      label: label,
+      button: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 22, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
