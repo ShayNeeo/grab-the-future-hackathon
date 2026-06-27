@@ -136,8 +136,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             width: 56,
             height: 56,
             child: IconButton(
-              onPressed: () => Navigator.maybePop(context),
+              onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
               icon: const Icon(Icons.arrow_back_rounded, size: 26),
+              tooltip: 'Quay lại Trang chủ',
               style: IconButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
@@ -191,6 +192,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: IconButton(
                 onPressed: () => ref.read(p.chatProvider.notifier).reset(),
                 icon: const Icon(Icons.refresh_rounded, size: 26),
+                tooltip: 'Bắt đầu cuộc trò chuyện mới',
+                semanticLabel: 'Làm mới cuộc trò chuyện',
                 style: IconButton.styleFrom(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14))),
@@ -205,14 +208,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         body: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                itemCount: messages.length,
-                itemBuilder: (context, index) =>
-                    _buildMessageBubble(messages[index]),
-              ),
+              child: messages.length <= 1
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) =>
+                          _buildMessageBubble(messages[index]),
+                    ),
             ),
             _buildInputBar(),
           ],
@@ -423,6 +428,83 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: const Icon(Icons.shield_rounded, size: 16, color: Colors.white),
       );
 
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Friendly shield illustration
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: AppColors.shieldTealBg,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.shieldTeal.withValues(alpha: 0.2),
+                  width: 3,
+                ),
+              ),
+              child: const Icon(
+                Icons.shield_rounded,
+                size: 52,
+                color: AppColors.shieldTeal,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Chào bạn! Tôi ở đây để giúp',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Gửi tin nhắn, ảnh chụp hoặc ghi âm\ntôi sẽ kiểm tra giúp bạn ngay',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 18,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Quick suggestion chips
+            _SuggestionChip(
+              icon: Icons.message_rounded,
+              label: 'Kiểm tra tin nhắn',
+              onTap: () {
+                _messageController.text = 'Tôi nhận được tin nhắn lạ, hãy kiểm tra giúp tôi';
+              },
+            ),
+            const SizedBox(height: 12),
+            _SuggestionChip(
+              icon: Icons.description_rounded,
+              label: 'Phân tích hợp đồng',
+              onTap: () {
+                _messageController.text = 'Tôi cần phân tích một hợp đồng';
+              },
+            ),
+            const SizedBox(height: 12),
+            _SuggestionChip(
+              icon: Icons.phone_in_talk_rounded,
+              label: 'Cuộc gọi đáng ngờ',
+              onTap: () {
+                _messageController.text = 'Tôi nhận cuộc gọi từ số lạ';
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildInputBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -475,6 +557,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onPressed: () => _pickImage(ImageSource.camera),
                     icon: const Icon(Icons.camera_alt_rounded,
                         color: AppColors.shieldTeal, size: 26),
+                    tooltip: 'Chụp ảnh',
+                    semanticLabel: 'Chụp ảnh bằng camera',
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),
@@ -487,6 +571,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onPressed: () => _pickImage(ImageSource.gallery),
                     icon: const Icon(Icons.photo_library_rounded,
                         color: AppColors.shieldTeal, size: 26),
+                    tooltip: 'Chọn ảnh',
+                    semanticLabel: 'Chọn ảnh từ thư viện',
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),
@@ -499,6 +585,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onPressed: () {},
                     icon: const Icon(Icons.mic_rounded,
                         color: AppColors.shieldTeal, size: 26),
+                    tooltip: 'Ghi âm',
+                    semanticLabel: 'Ghi âm giọng nói',
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),
@@ -565,4 +653,68 @@ class _ChatMessage {
     this.isAnalyzing = false,
     this.imageName,
   });
+}
+
+class _SuggestionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SuggestionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: label,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.shieldTeal.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.shieldTealBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 24, color: AppColors.shieldTeal),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

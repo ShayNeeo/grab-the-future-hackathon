@@ -12,8 +12,9 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _controller;
+  late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
@@ -33,6 +34,11 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
 
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
     _controller.forward();
 
     Future.delayed(const Duration(seconds: 3), () {
@@ -45,6 +51,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -73,16 +80,56 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(flex: 2),
-                  // Shield logo
-                  const ShieldLogo(size: 120, color: Colors.white),
-                  const SizedBox(height: 24),
+                  // Shield logo with animated pulse ring
+                  AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) {
+                      return Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(
+                                alpha: 0.15 + (_pulseController.value * 0.15)),
+                            width: 3 + (_pulseController.value * 2),
+                          ),
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 110,
+                            height: 110,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                            child: const Center(
+                              child: ShieldLogo(size: 90, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 28),
                   // App name
                   Text(
                     'Lá Chắn Lừa Đảo',
                     style: GoogleFonts.beVietnamPro(
-                      fontSize: 28,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Subtitle
+                  Text(
+                    'Người bạn đồng hành an toàn',
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                   const Spacer(flex: 2),
@@ -123,24 +170,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_OnboardingData> _pages = const [
     _OnboardingData(
-      icon: Icons.message_rounded,
+      icon: Icons.mark_email_unread_rounded,
       heading: 'Nhận được tin nhắn lạ?',
       body:
-          'Chỉ cần chụp ảnh hoặc gửi nội dung — ScamShield sẽ kiểm tra ngay cho bạn.',
+          'Chỉ cần chụp ảnh hoặc gửi nội dung — ScamShield sẽ kiểm tra ngay cho bạn. Không cần lo lắng!',
       buttonLabel: 'Tiếp theo',
     ),
     _OnboardingData(
       icon: Icons.radar_rounded,
       heading: 'Phát hiện dấu hiệu lừa đảo',
       body:
-          'AI sẽ tìm ra dấu hiệu nguy hiểm trong hợp đồng, voucher, và lời mời.',
+          'AI sẽ tìm ra dấu hiệu nguy hiểm trong hợp đồng, voucher, và lời mời. Bạn không đơn độc!',
       buttonLabel: 'Tiếp theo',
     ),
     _OnboardingData(
       icon: Icons.family_restroom_rounded,
       heading: 'Chia sẻ với người thân ngay',
       body:
-          'Kết nối với con cái hoặc người thân để cùng bảo vệ nhau.',
+          'Kết nối với con cái hoặc người thân để cùng bảo vệ nhau. An toàn hơn khi có người bên cạnh.',
       buttonLabel: 'Bắt đầu',
     ),
   ];
@@ -191,15 +238,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     child: Center(
                       child: Container(
-                        width: 140,
-                        height: 140,
+                        width: 160,
+                        height: 160,
                         decoration: BoxDecoration(
-                          color: AppColors.shieldTeal.withValues(alpha: 0.12),
+                          color: AppColors.shieldTeal.withValues(alpha: 0.08),
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.shieldTeal.withValues(alpha: 0.12),
+                            width: 2,
+                          ),
                         ),
                         child: Icon(
                           page.icon,
-                          size: 72,
+                          size: 80,
                           color: AppColors.shieldTeal,
                         ),
                       ),
@@ -242,21 +293,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const Spacer(),
-                    // Progress dots
+                    // Progress dots (larger for elderly visibility)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
                         _pages.length,
                         (i) => AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          width: i == _currentPage ? 24 : 10,
-                          height: 10,
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          width: i == _currentPage ? 28 : 12,
+                          height: 12,
                           decoration: BoxDecoration(
                             color: i == _currentPage
                                 ? AppColors.shieldTeal
                                 : AppColors.divider,
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                       ),
