@@ -29,6 +29,6 @@ class AppConstants {
   // API
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://grab.w9.nu:8085',
-  );
+    defaultValue: 'https://grab.w9.nu',
+  );  
 }
