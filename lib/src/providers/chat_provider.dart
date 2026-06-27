@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:justful/src/models/analysis_request.dart';
 import 'package:justful/src/models/analysis_response.dart';
-import 'package:justful/src/services/scamshield_api.dart';
+import 'package:justful/src/services/justful_api.dart';
 
 final apiProvider = Provider<JustfulApi>((ref) => JustfulApi());
 

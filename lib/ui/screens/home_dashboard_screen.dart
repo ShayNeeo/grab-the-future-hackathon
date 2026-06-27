@@ -119,7 +119,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Giải thích từ ScamShield:',
+                  'Giải thích từ Justful:',
                   style: GoogleFonts.beVietnamPro(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,

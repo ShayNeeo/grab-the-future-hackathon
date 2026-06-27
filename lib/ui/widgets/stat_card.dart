@@ -20,6 +20,7 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
+        constraints: const BoxConstraints(minHeight: 120),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
@@ -36,10 +37,12 @@ class StatCard extends StatelessWidget {
             Text(
               value,
               style: GoogleFonts.beVietnamPro(
-                fontSize: 28,
+                fontSize: value.length > 3 ? 20 : 28,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(

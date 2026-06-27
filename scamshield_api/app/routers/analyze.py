@@ -5,7 +5,7 @@ import json
 import logging
 
 from ..models.schemas import AnalyzeRequest, ContractRequest, ChatRequest, AnalysisResponse
-from ..agents.prompts import SCAMSHIELD_SYSTEM_PROMPT
+from ..agents.prompts import JUSTFUL_SYSTEM_PROMPT
 from ..config import settings
 
 logger = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ async def _stream_model(messages: list[dict]):
 
 @router.post("/analyze")
 async def analyze(req: AnalyzeRequest):
-    messages = [{"role": "system", "content": SCAMSHIELD_SYSTEM_PROMPT}]
+    messages = [{"role": "system", "content": JUSTFUL_SYSTEM_PROMPT}]
     messages.extend(req.history)
     messages.append({
         "role": "user",
@@ -147,7 +147,7 @@ async def analyze(req: AnalyzeRequest):
 
 @router.post("/chat")
 async def chat(req: ChatRequest):
-    messages = [{"role": "system", "content": SCAMSHIELD_SYSTEM_PROMPT}]
+    messages = [{"role": "system", "content": JUSTFUL_SYSTEM_PROMPT}]
     messages.extend(req.history)
     sanitized_text = req.text.replace("[USER SUBMITTED CONTENT END]", "[USER CONTENT END - SANITIZED]")
     delimited_text = (
@@ -162,7 +162,7 @@ async def chat(req: ChatRequest):
 @router.post("/contract", response_model=AnalysisResponse)
 async def contract(req: ContractRequest):
     messages = [
-        {"role": "system", "content": SCAMSHIELD_SYSTEM_PROMPT},
+        {"role": "system", "content": JUSTFUL_SYSTEM_PROMPT},
         {
             "role": "user",
             "content": _build_content(
