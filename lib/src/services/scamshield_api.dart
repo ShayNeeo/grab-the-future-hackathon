@@ -3,7 +3,7 @@ import 'package:justifty/core/constants/app_constants.dart';
 import 'package:justifty/src/models/analysis_request.dart';
 import 'package:justifty/src/models/analysis_response.dart';
 
-class JustiftyApi {
+class JustfulApi {
   final Dio _dio = Dio(BaseOptions(
     baseUrl: AppConstants.apiBaseUrl,
     connectTimeout: const Duration(seconds: 30),

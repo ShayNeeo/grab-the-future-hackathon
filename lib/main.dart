@@ -4,5 +4,5 @@ import 'package:justifty/app/app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: JustiftyApp()));
+  runApp(const ProviderScope(child: JustfulApp()));
 }

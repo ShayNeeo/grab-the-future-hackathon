@@ -3,7 +3,7 @@ import 'package:justifty/src/models/analysis_request.dart';
 import 'package:justifty/src/models/analysis_response.dart';
 import 'package:justifty/src/services/scamshield_api.dart';
 
-final apiProvider = Provider<JustiftyApi>((ref) => JustiftyApi());
+final apiProvider = Provider<JustfulApi>((ref) => JustfulApi());
 
 class ChatMessage {
   final String role; // 'user' | 'assistant'
@@ -22,7 +22,7 @@ class ChatMessage {
 class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
   ChatNotifier(this._api) : super(const AsyncValue.data([]));
 
-  final JustiftyApi _api;
+  final JustfulApi _api;
 
   List<Map<String, dynamic>> get _history {
     final messages = state.valueOrNull ?? [];

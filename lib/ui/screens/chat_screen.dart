@@ -190,7 +190,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Justifty AI',
+                  Text('Justful AI',
                       style: GoogleFonts.beVietnamPro(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,

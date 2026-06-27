@@ -5,7 +5,7 @@ import 'package:justifty/app/app.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: JustiftyApp()));
+    await tester.pumpWidget(const ProviderScope(child: JustfulApp()));
     expect(find.byType(MaterialApp), findsOneWidget);
     await tester.pumpAndSettle(const Duration(seconds: 3));
   });

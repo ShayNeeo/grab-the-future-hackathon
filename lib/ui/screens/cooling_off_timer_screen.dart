@@ -206,8 +206,8 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                   ShieldButton(
                     label: 'Chia sẻ cảnh báo này',
                     onPressed: () => Share.share(
-                      'Justifty cảnh báo: Tôi đang trong giai đoạn suy nghĩ 48 giờ và sẽ không ký hoặc chuyển tiền. Hãy liên hệ nếu bạn muốn biết thêm.',
-                      subject: 'Justifty — Cảnh báo lừa đảo',
+                      'Justful cảnh báo: Tôi đang trong giai đoạn suy nghĩ 48 giờ và sẽ không ký hoặc chuyển tiền. Hãy liên hệ nếu bạn muốn biết thêm.',
+                      subject: 'Justful — Cảnh báo lừa đảo',
                     ),
                     isOutlined: true,
                   ),

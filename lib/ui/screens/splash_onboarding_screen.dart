@@ -114,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                   const SizedBox(height: 28),
                   // App name
                   Text(
-                    'Justifty',
+                    'Justful',
                     style: GoogleFonts.beVietnamPro(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -173,7 +173,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.mark_email_unread_rounded,
       heading: 'Nhận được tin nhắn lạ?',
       body:
-          'Chỉ cần chụp ảnh hoặc gửi nội dung — Justifty sẽ kiểm tra ngay cho bạn. Không cần lo lắng!',
+          'Chỉ cần chụp ảnh hoặc gửi nội dung — Justful sẽ kiểm tra ngay cho bạn. Không cần lo lắng!',
       buttonLabel: 'Tiếp theo',
     ),
     _OnboardingData(

@@ -1,8 +1,8 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'Justifty';
-  static const String appNameVi = 'Justifty';
+  static const String appName = 'Justful';
+  static const String appNameVi = 'Justful';
   static const String tagline = 'Bảo vệ bạn khỏi lừa đảo';
 
   // Elderly-safe minimums
