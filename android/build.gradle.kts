@@ -1,16 +1,3 @@
-import groovy.lang.Closure
-import groovy.lang.GroovySystem
-import org.gradle.api.artifacts.dsl.RepositoryHandler
-
-GroovySystem.getMetaClassRegistry()
-    .getMetaClass(RepositoryHandler::class.java)
-    .registerInstanceMethod("jcenter", object : Closure<Any>(null) {
-        fun doCall(): Any? {
-            val handler = delegate as? RepositoryHandler
-            return handler?.mavenCentral()
-        }
-    })
-
 allprojects {
     repositories {
         google()
