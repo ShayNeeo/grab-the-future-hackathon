@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:justifty/core/constants/app_constants.dart';
-import 'package:justifty/src/models/analysis_request.dart';
-import 'package:justifty/src/models/analysis_response.dart';
+import 'package:justful/core/constants/app_constants.dart';
+import 'package:justful/src/models/analysis_request.dart';
+import 'package:justful/src/models/analysis_response.dart';
 
 class JustfulApi {
   final Dio _dio = Dio(BaseOptions(
@@ -9,6 +10,34 @@ class JustfulApi {
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 60),
   ));
+
+  Stream<String> analyzeStream(AnalysisRequest request) async* {
+    final response = await _dio.post<ResponseBody>(
+      '/analyze',
+      data: request.toJson(),
+      options: Options(responseType: ResponseType.stream),
+    );
+    await for (final chunk in response.data!.stream) {
+      yield utf8.decode(chunk);
+    }
+  }
+
+  Stream<String> chatStream({
+    required String text,
+    required List<Map<String, dynamic>> history,
+  }) async* {
+    final response = await _dio.post<ResponseBody>(
+      '/chat',
+      data: {
+        'text': text,
+        'history': history,
+      },
+      options: Options(responseType: ResponseType.stream),
+    );
+    await for (final chunk in response.data!.stream) {
+      yield utf8.decode(chunk);
+    }
+  }
 
   Future<AnalysisResponse> analyze(AnalysisRequest request) async {
     final resp = await _dio.post('/analyze', data: request.toJson());

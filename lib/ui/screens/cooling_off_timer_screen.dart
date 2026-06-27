@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:justifty/core/theme/app_colors.dart';
-import 'package:justifty/src/providers/cooling_off_provider.dart';
-import 'package:justifty/ui/widgets/shield_button.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/src/providers/cooling_off_provider.dart';
+import 'package:justful/ui/widgets/shield_button.dart';
 
 class CoolingOffTimerScreen extends ConsumerStatefulWidget {
   const CoolingOffTimerScreen({super.key});

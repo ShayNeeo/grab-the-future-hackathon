@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:justifty/core/theme/app_colors.dart';
-import 'package:justifty/ui/widgets/bottom_nav_shell.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/ui/widgets/bottom_nav_shell.dart';
 
 class FamilyGuardianScreen extends StatelessWidget {
   const FamilyGuardianScreen({super.key});

@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:justifty/core/theme/app_colors.dart';
-import 'package:justifty/ui/widgets/shield_button.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/ui/widgets/shield_button.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

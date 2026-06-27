@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:justifty/app/routes.dart';
-import 'package:justifty/core/theme/app_theme.dart';
-import 'package:justifty/src/models/analysis_response.dart';
-import 'package:justifty/ui/screens/scam_result_card_screen.dart';
+import 'package:justful/app/routes.dart';
+import 'package:justful/core/theme/app_theme.dart';
+import 'package:justful/src/models/analysis_response.dart';
+import 'package:justful/ui/screens/scam_result_card_screen.dart';
 
 class JustfulApp extends StatelessWidget {
   const JustfulApp({super.key});
