@@ -14,7 +14,7 @@ class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
 
   // Change this to true to enable the SMS Web Simulator UI
-  static const bool showSmsSimulator = false;
+  static const bool showSmsSimulator = true;
 
   @override
   ConsumerState<HomeDashboardScreen> createState() => _HomeDashboardScreenState();

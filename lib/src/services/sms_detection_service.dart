@@ -11,6 +11,8 @@ import 'package:justful/core/constants/app_constants.dart';
 import 'package:justful/src/models/sms_alert.dart';
 
 const _tag = '[SmsDetection]';
+// Set to true to show a notification for EVERY SMS (not just scams) — useful for debugging.
+const _debugEveryMessage = true;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -55,6 +57,12 @@ class SmsDetectionService {
       );
       await flutterLocalNotificationsPlugin.initialize(initializationSettings);
       debugPrint('$_tag notification plugin initialized');
+
+      // Android 13+ requires POST_NOTIFICATIONS permission at runtime.
+      final androidPlugin = flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final granted = await androidPlugin?.requestNotificationsPermission();
+      debugPrint('$_tag notification permission granted: $granted');
     } catch (e) {
       debugPrint('$_tag notification plugin init failed: $e');
     }
@@ -96,6 +104,10 @@ class SmsDetectionService {
     debugPrint('$_tag processSms() — sender: $sender');
     debugPrint('$_tag body preview: ${body.length > 80 ? body.substring(0, 80) : body}');
     debugPrint('$_tag API baseUrl: ${AppConstants.apiBaseUrl}');
+
+    if (_debugEveryMessage) {
+      await _showNotification('[DEBUG] Đang phân tích SMS...', 'Từ: $sender');
+    }
 
     final Dio dio = Dio(BaseOptions(
       baseUrl: AppConstants.apiBaseUrl,
@@ -142,6 +154,13 @@ class SmsDetectionService {
       final String riskLevel = data['risk_level'] as String? ?? 'low';
       final String explanation = data['explanation'] as String? ?? '';
       debugPrint('$_tag risk_level: $riskLevel');
+
+      if (_debugEveryMessage) {
+        await _showNotification(
+          '[DEBUG] SMS từ $sender',
+          'Rủi ro: $riskLevel | ${body.length > 60 ? body.substring(0, 60) : body}',
+        );
+      }
 
       if (riskLevel == 'medium' || riskLevel == 'high' || riskLevel == 'critical') {
         debugPrint('$_tag risk=$riskLevel — showing notification and saving alert');
