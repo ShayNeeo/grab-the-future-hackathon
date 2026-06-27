@@ -19,6 +19,7 @@ dependencies:
   image_picker: ^1.1.2
   share_plus: ^9.0.0
   shared_preferences: ^2.3.1
+  telephony: ^0.2.0
 
 dev_dependencies:
   flutter_test:

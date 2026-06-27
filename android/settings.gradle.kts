@@ -24,3 +24,19 @@ plugins {
 }
 
 include(":app")
+
+// Patch discontinued telephony package — namespace + compileSdk required by modern AGP/deps
+gradle.beforeProject {
+    if (name == "telephony") {
+        // Set namespace when the android plugin is applied (before AGP finalizes variants)
+        pluginManager.withPlugin("com.android.library") {
+            (extensions.findByName("android") as? com.android.build.gradle.LibraryExtension)
+                ?.namespace = "com.shounakmulay.telephony"
+        }
+        // Override compileSdk after telephony's build.gradle runs (it sets compileSdkVersion 31)
+        afterEvaluate {
+            (extensions.findByName("android") as? com.android.build.gradle.LibraryExtension)
+                ?.compileSdk = 36
+        }
+    }
+}
