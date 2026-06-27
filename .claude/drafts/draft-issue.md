@@ -1,37 +1,48 @@
 ---
-title: "[Feature] Show follow_up_questions in chat, user answers, and re-analyze (agentic loop)"
+title: "[Fix] Critical bugs in SMS interception service"
 kind: issue
 template: fallback
-labels: [feature]
+labels: [bug]
 ---
 
 ## Summary
 
-Implement an agentic loop in the chat interface where follow-up questions from the AI analysis are displayed as suggestion chips. Tapping these chips or typing a response should trigger a re-analysis, providing the full chat history to the API for context.
+Code review of the SMS interception feature (`sms_detection_service.dart`) surfaced 9 bugs ranging from critical (background notifications silently never fire) to security (cleartext HTTP transmitting private SMS content) to low (unbounded storage growth). All are fixed in the same commit.
 
-## Context
+## Bugs fixed
 
-When the `/analyze` endpoint returns `follow_up_questions`, they should be shown in the chat UI as suggestion chips below the AI message. The app should not immediately navigate to the `ScamResultCardScreen` if follow-up questions are present. Instead:
-- Tapping a chip sends the question text as a new message.
-- Sending a response (via chip tap or typing) triggers a new request to `/analyze` containing the conversation history.
-- The loop continues until the AI response has no more `follow_up_questions`, at which point the app navigates to the result card.
+### Critical
+- **Background notifications never fired** — `backGroundMessageHandler` runs in a separate Dart isolate. `FlutterLocalNotificationsPlugin` was only initialized in the foreground isolate; the background instance was always fresh/uninitialized. Fixed by calling `initialize()` inside `backGroundMessageHandler` before invoking `processSms`.
+
+### High – Security
+- **Cleartext HTTP transmitted private SMS content and API keys** — `android:usesCleartextTraffic="true"` was set app-wide; the default API URL is plain HTTP. Replaced with `android:networkSecurityConfig` scoped to only the API host (`grab.w9.nu`), keeping all other domains HTTPS-only.
+- **Notification ID collision** — `DateTime.now().millisecond` (range 0–999) used as notification ID caused the second alert within the same second to silently replace the first. Changed to `DateTime.now().millisecondsSinceEpoch % 0x7FFFFFFF`.
+
+### Medium
+- **Stream errors leaked internal exception details** — `_stream_model` yielded `f"Error: {e}"` into the HTTP 200 stream; HTTP client exceptions can include auth headers and internal URLs. Now yields `{"__error__":true}` instead.
+- **Concurrent sends not guarded** — removing `AsyncValue.loading()` left no guard against double-sends during streaming. Added `_isSending` bool to `ChatNotifier` (returns early on re-entry, resets in `finally`) and grayed-out / disabled the send button in `ChatScreen` while streaming.
+- **Force-unwrap on nullable `response.data`** — `response.data!.stream` could crash if the server returned an empty body. Changed to a null-check with early return.
+- **Prompt injection via delimiter bypass** — user-supplied SMS text was wrapped in `[USER SUBMITTED CONTENT START]…[USER SUBMITTED CONTENT END]` delimiters with no sanitization. An attacker could embed the closing token to escape the trust boundary. Now strips the token from user input before wrapping.
+
+### Low
+- **Alert list grew unboundedly** — `_saveAlert` performed a full read-modify-write of the SharedPreferences list on every SMS with no cap. Added a 100-entry cap and same-sender+body deduplication.
+- **`print()` in production catch block** — replaced with `debugPrint()` so it respects debug/release mode and integrates with crash reporters.
 
 ## Affected files
 
+- [android/app/src/main/AndroidManifest.xml](android/app/src/main/AndroidManifest.xml)
+- [android/app/src/main/res/xml/network_security_config.xml](android/app/src/main/res/xml/network_security_config.xml) *(new)*
+- [lib/src/services/sms_detection_service.dart](lib/src/services/sms_detection_service.dart)
 - [lib/src/providers/chat_provider.dart](lib/src/providers/chat_provider.dart)
 - [lib/ui/screens/chat_screen.dart](lib/ui/screens/chat_screen.dart)
-
-## Proposed behavior
-
-1. **Update `ChatMessage` model** to store and propagate `followUpQuestions`.
-2. **Expose `history`** from `chatProvider` containing all prior user and assistant messages for contextual re-analysis.
-3. **Render suggestion chips** below AI chat bubbles in `ChatScreen` if they contain follow-up questions.
-4. **Conditionally navigate** to `ScamResultCardScreen` only when the latest analysis contains no more `follow_up_questions`.
+- [scamshield_api/app/routers/analyze.py](scamshield_api/app/routers/analyze.py)
 
 ## Acceptance criteria
 
-- [ ] Vague messages (e.g. "Có người gọi điện cho tôi") trigger follow-up questions.
-- [ ] Follow-up questions render as suggestion chips in the chat UI.
-- [ ] Tapping a chip sends the message and runs a re-analysis.
-- [ ] Full chat history is sent to the backend during the loop.
-- [ ] If no follow-up questions remain, navigation to the result card is triggered.
+- [ ] Receiving a scam SMS while the app is backgrounded shows a system notification.
+- [ ] App no longer sets `usesCleartextTraffic=true` app-wide; other domains still require HTTPS.
+- [ ] Two scam SMS arriving within the same second produce two distinct notifications.
+- [ ] A stream error from the API shows a user-friendly error message; no internal details in the response.
+- [ ] Tapping Send while a response is streaming does nothing (button is visually disabled).
+- [ ] SMS containing `[USER SUBMITTED CONTENT END]` is sanitized and does not escape the analysis prompt.
+- [ ] Alert list in SharedPreferences never exceeds 100 entries; duplicate sender+body is not stored twice.

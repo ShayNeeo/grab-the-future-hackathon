@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart' show Color;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,9 +13,14 @@ import 'package:justful/src/models/sms_alert.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-// Top-level background message handler
 @pragma('vm:entry-point')
 void backGroundMessageHandler(SmsMessage message) async {
+  // Each Dart isolate has its own heap — re-initialize the plugin here.
+  await flutterLocalNotificationsPlugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+  );
   final String sender = message.address ?? 'Người lạ';
   final String body = message.body ?? '';
   if (body.isNotEmpty) {
@@ -74,9 +79,11 @@ class SmsDetectionService {
         options: Options(responseType: ResponseType.stream),
       );
 
-      // Accumulate stream chunks
+      final responseData = response.data;
+      if (responseData == null) return;
+
       String accumulated = '';
-      await for (final chunk in response.data!.stream) {
+      await for (final chunk in responseData.stream) {
         accumulated += utf8.decode(chunk);
       }
 
@@ -116,7 +123,7 @@ class SmsDetectionService {
         ));
       }
     } catch (e) {
-      print('SMS Detection Background Error: $e');
+      debugPrint('SMS Detection Error: $e');
     }
   }
 
@@ -134,7 +141,7 @@ class SmsDetectionService {
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecond,
+      DateTime.now().millisecondsSinceEpoch % 0x7FFFFFFF,
       title,
       body,
       platformChannelSpecifics,
@@ -144,7 +151,18 @@ class SmsDetectionService {
   static Future<void> _saveAlert(SmsAlert alert) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final List<String> existing = prefs.getStringList('sms_alerts') ?? [];
+    // Skip duplicate (same sender + body already stored)
+    final isDuplicate = existing.any((item) {
+      try {
+        final parsed = json.decode(item) as Map<String, dynamic>;
+        return parsed['sender'] == alert.sender && parsed['body'] == alert.body;
+      } catch (_) {
+        return false;
+      }
+    });
+    if (isDuplicate) return;
     existing.insert(0, json.encode(alert.toJson()));
+    if (existing.length > 100) existing.removeRange(100, existing.length);
     await prefs.setStringList('sms_alerts', existing);
   }
 

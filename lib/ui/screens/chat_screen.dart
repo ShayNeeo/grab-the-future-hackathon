@@ -689,6 +689,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildInputBar() {
+    final chatState = ref.watch(p.chatProvider);
+    final isStreaming = (chatState.valueOrNull ?? []).any((m) => m.isStreaming);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
@@ -803,11 +805,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   width: 48,
                   height: 48,
                   child: IconButton(
-                    onPressed: _sendMessage,
+                    onPressed: isStreaming ? null : _sendMessage,
                     icon: const Icon(Icons.send_rounded,
                         color: Colors.white, size: 22),
                     style: IconButton.styleFrom(
-                        backgroundColor: AppColors.shieldTeal,
+                        backgroundColor: isStreaming
+                            ? AppColors.shieldTeal.withValues(alpha: 0.4)
+                            : AppColors.shieldTeal,
                         shape: const CircleBorder()),
                   ),
                 ),

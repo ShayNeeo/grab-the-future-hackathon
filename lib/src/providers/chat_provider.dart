@@ -46,6 +46,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
   ChatNotifier(this._api) : super(const AsyncValue.data([]));
 
   final JustfulApi _api;
+  bool _isSending = false;
+
+  bool get isSending => _isSending;
 
   /// Build conversation history for the backend.
   /// Includes both user messages and assistant replies so the AI
@@ -63,6 +66,8 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
   }
 
   Future<void> send({required String text, String? imageBase64}) async {
+    if (_isSending) return;
+    _isSending = true;
     final current = state.valueOrNull ?? [];
     final userMsg = ChatMessage(
       role: 'user',
@@ -165,6 +170,8 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
         );
         state = AsyncValue.data(updatedList);
       }
+    } finally {
+      _isSending = false;
     }
   }
 
