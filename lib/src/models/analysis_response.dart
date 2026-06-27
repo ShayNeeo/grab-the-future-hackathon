@@ -19,6 +19,7 @@ class AnalysisResponse {
   final List<String> nextActions;
   final bool coolingOff;
   final int coolingOffHours;
+  final String explanation;
   final String suggestedReply;
   final List<String> followUpQuestions;
 
@@ -31,6 +32,7 @@ class AnalysisResponse {
     required this.nextActions,
     required this.coolingOff,
     required this.coolingOffHours,
+    required this.explanation,
     required this.suggestedReply,
     required this.followUpQuestions,
   });
@@ -53,6 +55,7 @@ class AnalysisResponse {
       nextActions: List<String>.from(json['next_actions'] ?? []),
       coolingOff: json['cooling_off'] as bool? ?? false,
       coolingOffHours: json['cooling_off_hours'] as int? ?? 48,
+      explanation: json['explanation'] as String? ?? '',
       suggestedReply: json['suggested_reply'] as String? ?? '',
       followUpQuestions: List<String>.from(json['follow_up_questions'] ?? []),
     );

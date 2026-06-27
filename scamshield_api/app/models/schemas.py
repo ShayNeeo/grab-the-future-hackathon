@@ -31,5 +31,6 @@ class AnalysisResponse(BaseModel):
     next_actions: list[str]
     cooling_off: bool
     cooling_off_hours: int = 48
+    explanation: str
     suggested_reply: str
     follow_up_questions: list[str] = []
