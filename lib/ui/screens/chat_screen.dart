@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:scamshield/app/routes.dart';
-import 'package:scamshield/core/theme/app_colors.dart';
-import 'package:scamshield/src/providers/chat_provider.dart' as p;
-import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
+import 'package:justful/app/routes.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/src/providers/chat_provider.dart' as p;
+import 'package:justful/ui/widgets/bottom_nav_shell.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -160,7 +160,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ScamShield AI',
+                  Text('Justful AI',
                       style: GoogleFonts.beVietnamPro(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
