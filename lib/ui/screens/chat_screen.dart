@@ -88,7 +88,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               _transcribedWords = val.recognizedWords;
             });
           },
-          localeId: 'vi_VN',
+          listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
         );
       } catch (e) {
         debugPrint('Speech listen error: $e');

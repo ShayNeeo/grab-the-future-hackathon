@@ -2,18 +2,16 @@
 try {
     val pubCacheDir = java.io.File(System.getProperty("user.home"), ".pub-cache")
     if (pubCacheDir.exists()) {
-        val paths = listOf(
-            "hosted/pub.dev/speech_to_text-6.6.2/android/build.gradle",
-            "hosted/pub.dartlang.org/speech_to_text-6.6.2/android/build.gradle"
-        )
-        for (relativePath in paths) {
-            val buildGradle = java.io.File(pubCacheDir, relativePath)
-            if (buildGradle.exists()) {
-                var content = buildGradle.readText()
-                if (content.contains("jcenter()")) {
-                    content = content.replace("jcenter()", "mavenCentral()")
-                    buildGradle.writeText(content)
-                    println("Successfully patched speech_to_text build.gradle to replace jcenter() with mavenCentral()")
+        val hostedDir = java.io.File(pubCacheDir, "hosted")
+        if (hostedDir.exists()) {
+            hostedDir.walkTopDown().forEach { file ->
+                if (file.name == "build.gradle" && file.parentFile.parentFile.name.startsWith("speech_to_text")) {
+                    var content = file.readText()
+                    if (content.contains("jcenter()")) {
+                        content = content.replace("jcenter()", "mavenCentral()")
+                        file.writeText(content)
+                        println("Successfully patched ${file.absolutePath} to replace jcenter() with mavenCentral()")
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -205,6 +205,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                   const SizedBox(height: 12),
                   ShieldButton(
                     label: 'Chia sẻ cảnh báo này',
+                    // ignore: deprecated_member_use
                     onPressed: () => Share.share(
                       'Justful cảnh báo: Tôi đang trong giai đoạn suy nghĩ 48 giờ và sẽ không ký hoặc chuyển tiền. Hãy liên hệ nếu bạn muốn biết thêm.',
                       subject: 'Justful — Cảnh báo lừa đảo',
