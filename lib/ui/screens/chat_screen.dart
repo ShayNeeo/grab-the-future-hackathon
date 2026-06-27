@@ -33,7 +33,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   static const _greeting = _ChatMessage(
     isAi: true,
     text:
-        'Xin chào Bà Lan! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
+        'Xin chào bà! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
     time: '',
   );
 
@@ -51,15 +51,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final available = await _speech.initialize(
         onError: (val) {
           debugPrint('Speech error: $val');
+          if (!mounted) return;
           setState(() => _isListening = false);
         },
         onStatus: (val) {
           debugPrint('Speech status: $val');
           if (val == 'done' || val == 'notListening') {
+            if (!mounted) return;
             setState(() => _isListening = false);
           }
         },
       );
+      if (!mounted) return;
       setState(() {
         _speechAvailable = available;
       });
@@ -68,7 +71,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  void _startListening(StateSetter dialogState) async {
+  void _startListening() async {
     await _initSpeech();
     if (!mounted) return;
     if (_speechAvailable) {
@@ -76,15 +79,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _isListening = true;
         _transcribedWords = '';
       });
-      dialogState(() {});
       
       try {
         await _speech.listen(
           onResult: (val) {
+            if (!mounted) return;
             setState(() {
               _transcribedWords = val.recognizedWords;
             });
-            dialogState(() {});
           },
           localeId: 'vi_VN',
         );
@@ -138,6 +140,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    _speech.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -812,7 +815,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chào Bà Lan,',
+                  'Chào bà,',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -843,7 +846,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     if (_isListening) {
                       _stopListening();
                     } else {
-                      _startListening((fn) => setState(fn));
+                      _startListening();
                     }
                   },
                   child: AnimatedContainer(

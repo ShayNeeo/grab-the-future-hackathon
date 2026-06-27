@@ -67,8 +67,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Justful needs access to the microphone to transcribe your voice notes to text.</string>
+	<string>Justful cần quyền truy cập micro để chuyển giọng nói của bạn thành văn bản.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Justful needs speech recognition permission to transcribe your voice notes to text.</string>
+	<string>Justful cần quyền Nhận diện giọng nói để chuyển giọng nói của bạn thành văn bản.</string>
 </dict>
 </plist>
