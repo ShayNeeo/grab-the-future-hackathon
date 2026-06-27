@@ -160,7 +160,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
         updatedList[updatedList.length - 1] = finalMsg;
         state = AsyncValue.data(updatedList);
       }
-    } catch (e, st) {
+    } catch (e) {
       final updatedList = List<ChatMessage>.from(state.valueOrNull ?? []);
       if (updatedList.isNotEmpty) {
         updatedList[updatedList.length - 1] = ChatMessage(

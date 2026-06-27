@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:justful/app/routes.dart';
 import 'package:justful/core/theme/app_colors.dart';
 import 'package:justful/src/providers/chat_provider.dart' as p;
@@ -42,7 +43,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _initSpeech();
+    _checkPermissionAndInitSpeech();
+  }
+
+  Future<void> _checkPermissionAndInitSpeech() async {
+    final status = await Permission.microphone.status;
+    if (status.isGranted) {
+      await _initSpeech();
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -108,9 +116,61 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  void _showPermissionPermanentlyDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Quyền truy cập Micro'),
+          content: const Text(
+            'Quyền truy cập micro đã bị từ chối. Vui lòng mở cài đặt ứng dụng để bật quyền truy cập micro cho Justful.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Mở Cài Đặt'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _startListening() async {
     if (_speechBusy) return;
     _speechBusy = true;
+
+    // Check and request permission using permission_handler first
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      status = await Permission.microphone.request();
+      if (!mounted) return;
+    }
+
+    if (!status.isGranted) {
+      _speechBusy = false;
+      if (!mounted) return;
+      if (status.isPermanentlyDenied) {
+        _showPermissionPermanentlyDeniedDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vui lòng cấp quyền truy cập micro để sử dụng giọng nói.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return;
+    }
 
     if (!_speechAvailable) {
       // Tear down old session completely before re-init
