@@ -27,7 +27,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _speechAvailable = false;
   bool _isListening = false;
-  bool _speechInitialized = false;
+  bool _speechInitAttempted = false;
+  bool _speechBusy = false;
   String _transcribedWords = '';
   bool _useVoiceMode = true;
 
@@ -53,20 +54,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _initSpeech() async {
-    if (_speechInitialized) return;
-    _speechInitialized = true;
+    if (_speechInitAttempted) return;
+    _speechInitAttempted = true;
     try {
+      // Always cancel first to clean up any stale platform session
+      try {
+        await _speech.cancel();
+      } catch (_) {}
+      
       final available = await _speech.initialize(
         onError: (val) {
           debugPrint('Speech error: $val');
           if (!mounted) return;
-          setState(() => _isListening = false);
+          setState(() {
+            _isListening = false;
+            _speechBusy = false;
+            // If permanent error, mark speech as unavailable
+            if (val.permanent) {
+              _speechAvailable = false;
+            }
+          });
         },
         onStatus: (val) {
           debugPrint('Speech status: $val');
           if (val == 'done' || val == 'notListening') {
             if (!mounted) return;
-            setState(() => _isListening = false);
+            setState(() {
+              _isListening = false;
+              _speechBusy = false;
+            });
           }
         },
       );
@@ -84,6 +100,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _toggleListening() {
+    if (_speechBusy) return;
     if (_isListening) {
       _stopListening();
     } else {
@@ -92,13 +109,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _startListening() async {
+    if (_speechBusy) return;
+    _speechBusy = true;
+
     if (!_speechAvailable) {
-      // Re-attempt init in case permission was granted since last try
-      _speechInitialized = false;
+      // Tear down old session completely before re-init
+      try { await _speech.cancel(); } catch (_) {}
+      _speechInitAttempted = false;
       await _initSpeech();
       if (!mounted) return;
     }
     if (!_speechAvailable) {
+      _speechBusy = false;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -108,11 +130,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
       return;
     }
-    
-    setState(() {
-      _isListening = true;
-      _transcribedWords = '';
-    });
     
     try {
       await _speech.listen(
@@ -124,14 +141,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         },
         listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
       );
+      // Only set listening AFTER _speech.listen() succeeds
+      if (!mounted) return;
+      setState(() {
+        _isListening = true;
+        _transcribedWords = '';
+      });
     } catch (e) {
       debugPrint('Speech listen error: $e');
       if (!mounted) return;
       setState(() => _isListening = false);
+    } finally {
+      _speechBusy = false;
     }
   }
 
   void _stopListening() async {
+    if (_speechBusy && !_isListening) return;
+    _speechBusy = true;
     try {
       if (_speech.isListening) {
         await _speech.stop();
@@ -140,7 +167,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       debugPrint('Speech stop error: $e');
     }
     if (mounted) {
-      setState(() => _isListening = false);
+      setState(() {
+        _isListening = false;
+        _speechBusy = false;
+      });
+    } else {
+      _speechBusy = false;
     }
   }
 
@@ -172,9 +204,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    try {
-      _speech.cancel();
-    } catch (_) {}
+    _speech.cancel().catchError((_) {});
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -744,6 +774,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: InkWell(
                 onTap: () {
                   if (!_useVoiceMode) {
+                    _stopListening();
                     setState(() {
                       _useVoiceMode = true;
                     });
@@ -787,6 +818,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: InkWell(
                 onTap: () {
                   if (_useVoiceMode) {
+                    _stopListening();
                     setState(() {
                       _useVoiceMode = false;
                     });
@@ -1005,6 +1037,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ? null
                         : () {
                             final speechText = _transcribedWords;
+                            _stopListening();
                             setState(() {
                               _transcribedWords = '';
                               _useVoiceMode = false;
