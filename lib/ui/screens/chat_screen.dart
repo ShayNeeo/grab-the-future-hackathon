@@ -9,7 +9,8 @@ import 'package:justful/core/theme/app_colors.dart';
 import 'package:justful/src/providers/chat_provider.dart' as p;
 import 'package:justful/src/models/analysis_response.dart';
 import 'package:justful/ui/widgets/bottom_nav_shell.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:record/record.dart';
+import 'package:justful/src/services/justful_api.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -24,9 +25,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ImagePicker _picker = ImagePicker();
   String? _pendingImageBase64;
   
-  final stt.SpeechToText _speech = stt.SpeechToText();
-  bool _speechAvailable = false;
-  bool _isListening = false;
+  final Record _recorder = Record();
+  bool _isListening = false;    // đang ghi âm
+  bool _isTranscribing = false; // đang gửi lên Gemini
   String _transcribedWords = '';
   bool _useVoiceMode = true;
 
@@ -45,71 +46,65 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _pendingImageBase64 = base64Encode(bytes));
   }
 
-  Future<void> _initSpeech() async {
-    if (_speechAvailable) return;
-    try {
-      final available = await _speech.initialize(
-        onError: (val) {
-          debugPrint('Speech error: $val');
-          if (!mounted) return;
-          setState(() => _isListening = false);
-        },
-        onStatus: (val) {
-          debugPrint('Speech status: $val');
-          if (val == 'done' || val == 'notListening') {
-            if (!mounted) return;
-            setState(() => _isListening = false);
-          }
-        },
-      );
+  Future<void> _startListening() async {
+    if (_isTranscribing) return;
+    if (!await _recorder.hasPermission()) {
       if (!mounted) return;
-      setState(() {
-        _speechAvailable = available;
-      });
-    } catch (e) {
-      debugPrint('Speech initialization failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Cần cấp quyền micro. Vào Cài đặt → Quyền riêng tư → Micrô.',
+            style: GoogleFonts.beVietnamPro(fontSize: 16),
+          ),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
     }
+
+    final path =
+        '${Directory.systemTemp.path}/justful_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _recorder.start(
+      path: path,
+      encoder: AudioEncoder.aacLc,
+      samplingRate: 16000,
+      numChannels: 1,
+    );
+    if (!mounted) return;
+    setState(() {
+      _isListening = true;
+      _transcribedWords = '';
+    });
   }
 
-  void _startListening() async {
-    await _initSpeech();
+  Future<void> _stopListening() async {
+    final path = await _recorder.stop();
     if (!mounted) return;
-    if (_speechAvailable) {
-      setState(() {
-        _isListening = true;
-        _transcribedWords = '';
-      });
-      
-      try {
-        await _speech.listen(
-          onResult: (val) {
-            if (!mounted) return;
-            setState(() {
-              _transcribedWords = val.recognizedWords;
-            });
-          },
-          listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
-        );
-      } catch (e) {
-        debugPrint('Speech listen error: $e');
-      }
-    } else {
+    setState(() => _isListening = false);
+    if (path == null) return;
+
+    setState(() => _isTranscribing = true);
+    try {
+      final bytes = await File(path).readAsBytes();
+      final text = await JustfulApi().transcribeAudio(bytes);
+      if (!mounted) return;
+      setState(() => _transcribedWords = text);
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro.'),
+        SnackBar(
+          content: Text(
+            'Không nhận được giọng nói, xin thử lại.',
+            style: GoogleFonts.beVietnamPro(fontSize: 16),
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isTranscribing = false);
+      try { File(path).deleteSync(); } catch (_) {}
     }
-  }
-
-  void _stopListening() async {
-    try {
-      await _speech.stop();
-    } catch (e) {
-      debugPrint('Speech stop error: $e');
-    }
-    setState(() => _isListening = false);
   }
 
 
@@ -140,7 +135,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    _speech.cancel();
+    _recorder.dispose();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -842,13 +837,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    if (_isListening) {
-                      _stopListening();
-                    } else {
-                      _startListening();
-                    }
-                  },
+                  onTap: _isTranscribing
+                      ? null
+                      : () {
+                          if (_isListening) {
+                            _stopListening();
+                          } else {
+                            _startListening();
+                          }
+                        },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 160,
@@ -858,35 +855,57 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.shieldTeal.withValues(
-                            alpha: _isListening ? 0.4 : 0.2,
+                            alpha: (_isListening || _isTranscribing) ? 0.4 : 0.2,
                           ),
-                          blurRadius: _isListening ? 24 : 12,
-                          spreadRadius: _isListening ? 6 : 2,
+                          blurRadius: (_isListening || _isTranscribing) ? 24 : 12,
+                          spreadRadius: (_isListening || _isTranscribing) ? 6 : 2,
                         )
                       ],
                     ),
-                    child: _isListening
-                        ? const _SpeechPulseAnimation()
-                        : Container(
-                            decoration: const BoxDecoration(
-                              color: AppColors.shieldTeal,
+                    child: _isTranscribing
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.shieldTeal.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.mic_rounded,
-                              color: Colors.white,
-                              size: 72,
+                            child: const Padding(
+                              padding: EdgeInsets.all(44),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 4,
+                                color: AppColors.shieldTeal,
+                              ),
                             ),
-                          ),
+                          )
+                        : _isListening
+                            ? const _SpeechPulseAnimation()
+                            : Container(
+                                decoration: const BoxDecoration(
+                                  color: AppColors.shieldTeal,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.mic_rounded,
+                                  color: Colors.white,
+                                  size: 72,
+                                ),
+                              ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _isListening ? 'Đang lắng nghe... Chạm để Dừng' : 'Chạm vào để Nói',
+                  _isTranscribing
+                      ? 'Đang nhận dạng giọng nói...'
+                      : _isListening
+                          ? 'Đang ghi âm... Chạm để Gửi'
+                          : 'Chạm vào để Nói',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: _isListening ? Colors.redAccent : AppColors.textPrimary,
+                    color: _isListening
+                        ? Colors.redAccent
+                        : _isTranscribing
+                            ? AppColors.shieldTeal
+                            : AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -917,17 +936,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 width: 1.5,
               ),
             ),
-            child: Text(
-              _transcribedWords.isEmpty
-                  ? (_isListening ? 'Bà hãy nói đi, con đang nghe...' : 'Giọng nói của bà sẽ xuất hiện ở đây...')
-                  : _transcribedWords,
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 20,
-                color: _transcribedWords.isEmpty ? AppColors.textSecondary : AppColors.textPrimary,
-                height: 1.5,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: _isTranscribing
+                ? Row(
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2.5, color: AppColors.shieldTeal),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Đang nhận dạng...',
+                        style: GoogleFonts.beVietnamPro(
+                            fontSize: 18,
+                            color: AppColors.shieldTeal,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  )
+                : Text(
+                    _transcribedWords.isEmpty
+                        ? (_isListening
+                            ? 'Bà hãy nói đi, con đang ghi âm...'
+                            : 'Giọng nói của bà sẽ xuất hiện ở đây...')
+                        : _transcribedWords,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 20,
+                      color: _transcribedWords.isEmpty
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
           ),
           const SizedBox(height: 24),
           // Large clear and send buttons
@@ -937,7 +979,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: SizedBox(
                   height: 60,
                   child: OutlinedButton(
-                    onPressed: _transcribedWords.isEmpty
+                    onPressed: (_transcribedWords.isEmpty || _isTranscribing || _isListening)
                         ? null
                         : () {
                             setState(() {
@@ -973,7 +1015,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: SizedBox(
                   height: 60,
                   child: ElevatedButton(
-                    onPressed: _transcribedWords.trim().isEmpty
+                    onPressed: (_transcribedWords.trim().isEmpty || _isTranscribing || _isListening)
                         ? null
                         : () {
                             final speechText = _transcribedWords;

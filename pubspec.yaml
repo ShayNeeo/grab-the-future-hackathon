@@ -19,7 +19,7 @@ dependencies:
   image_picker: ^1.1.2
   share_plus: ^12.0.2
   shared_preferences: ^2.3.1
-  speech_to_text: ^7.3.0
+  record: 4.4.4
   telephony: ^0.2.0
 
 dev_dependencies:

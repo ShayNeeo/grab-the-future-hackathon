@@ -17,6 +17,15 @@ class ChatRequest(BaseModel):
     history: list[dict] = []
 
 
+class TranscribeRequest(BaseModel):
+    audio_base64: str
+    mime_type: str = "audio/mp4"
+
+
+class TranscribeResponse(BaseModel):
+    text: str
+
+
 class RedFlag(BaseModel):
     type: str
     detail: str

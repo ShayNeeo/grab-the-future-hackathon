@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from openai import AsyncOpenAI
+import google.generativeai as genai
 import json
 import logging
+import asyncio
 
-from ..models.schemas import AnalyzeRequest, ContractRequest, ChatRequest, AnalysisResponse
+from ..models.schemas import AnalyzeRequest, ContractRequest, ChatRequest, AnalysisResponse, TranscribeRequest, TranscribeResponse
 from ..agents.prompts import JUSTFUL_SYSTEM_PROMPT
 from ..config import settings
 
@@ -157,6 +159,35 @@ async def chat(req: ChatRequest):
     )
     messages.append({"role": "user", "content": delimited_text})
     return StreamingResponse(_stream_model(messages), media_type="text/plain")
+
+
+@router.post("/transcribe", response_model=TranscribeResponse)
+async def transcribe(req: TranscribeRequest):
+    """Transcribe audio to text using Gemini Flash multimodal (supports Vietnamese)."""
+    try:
+        genai.configure(api_key=settings.gemma_api_key)
+        model = genai.GenerativeModel("gemini-2.0-flash")
+
+        def _do_transcribe():
+            return model.generate_content([
+                {
+                    "inline_data": {
+                        "mime_type": req.mime_type,
+                        "data": req.audio_base64,
+                    }
+                },
+                (
+                    "Hãy chép lại CHÍNH XÁC những gì người nói trong đoạn âm thanh này bằng tiếng Việt. "
+                    "Chỉ trả về văn bản thuần túy, không thêm bất kỳ giải thích hay chú thích nào."
+                ),
+            ])
+
+        response = await asyncio.to_thread(_do_transcribe)
+        text = (response.text or "").strip()
+        return TranscribeResponse(text=text)
+    except Exception as e:
+        logger.error("Transcription failed: %s", e)
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 @router.post("/contract", response_model=AnalysisResponse)

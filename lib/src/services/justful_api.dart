@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:justful/core/constants/app_constants.dart';
 import 'package:justful/src/models/analysis_request.dart';
@@ -60,5 +61,17 @@ class JustfulApi {
       'image_base64': imageBase64,
     });
     return AnalysisResponse.fromJson(resp.data as Map<String, dynamic>);
+  }
+
+  /// Gửi audio bytes lên Gemini Flash để nhận dạng giọng nói tiếng Việt.
+  Future<String> transcribeAudio(Uint8List audioBytes,
+      {String mimeType = 'audio/mp4'}) async {
+    final audio64 = base64Encode(audioBytes);
+    final resp = await _dio.post<Map<String, dynamic>>(
+      '/transcribe',
+      data: {'audio_base64': audio64, 'mime_type': mimeType},
+      options: Options(receiveTimeout: const Duration(seconds: 30)),
+    );
+    return ((resp.data?['text'] as String?) ?? '').trim();
   }
 }
