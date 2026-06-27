@@ -5,8 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart' show Color;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:telephony/telephony.dart'
-    if (dart.library.html) 'package:justful/src/services/telephony_mock.dart';
+import 'package:justful/src/services/telephony_mock.dart';
 import 'package:justful/core/constants/app_constants.dart';
 import 'package:justful/src/models/sms_alert.dart';
 
