@@ -1,56 +1,50 @@
+﻿import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
+import 'package:scamshield/src/providers/chat_provider.dart' as p;
 import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
 
-class ChatScreen extends StatefulWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<_ChatMessage> _messages = [
-    _ChatMessage(
-      isAi: true,
-      text:
-          'Xin chào Bà Lan! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
-      time: '10:30',
-    ),
-    _ChatMessage(
-      isAi: false,
-      text: 'Tôi nhận được tin nhắn này, con xem giúp tôi',
-      time: '10:31',
-    ),
-    _ChatMessage(
-      isAi: false,
-      isImage: true,
-      imageName: 'Ảnh tin nhắn.jpg',
-      time: '10:31',
-    ),
-    _ChatMessage(
-      isAi: true,
-      isAnalyzing: true,
-      text: 'Đang kiểm tra dấu hiệu lừa đảo...',
-      time: '10:31',
-    ),
-  ];
+  final ImagePicker _picker = ImagePicker();
+  String? _pendingImageBase64;
+
+  static const _greeting = _ChatMessage(
+    isAi: true,
+    text:
+        'Xin chào Bà Lan! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
+    time: '',
+  );
+
+  Future<void> _pickImage(ImageSource source) async {
+    final xFile = await _picker.pickImage(
+        source: source, imageQuality: 70, maxWidth: 1024);
+    if (xFile == null) return;
+    final bytes = await File(xFile.path).readAsBytes();
+    setState(() => _pendingImageBase64 = base64Encode(bytes));
+  }
 
   void _sendMessage() {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
-
-    setState(() {
-      _messages.add(_ChatMessage(
-        isAi: false,
-        text: text,
-        time: '${TimeOfDay.now().hour}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
-      ));
-    });
+    if (text.isEmpty && _pendingImageBase64 == null) return;
+    ref.read(p.chatProvider.notifier).send(
+          text: text.isEmpty ? '[Ảnh đính kèm]' : text,
+          imageBase64: _pendingImageBase64,
+        );
     _messageController.clear();
+    setState(() => _pendingImageBase64 = null);
     _scrollToBottom();
   }
 
@@ -73,8 +67,49 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  List<_ChatMessage> _buildDisplayMessages(
+      AsyncValue<List<p.ChatMessage>> state) {
+    final now = TimeOfDay.now();
+    final timeStr =
+        '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
+
+    final providerMsgs = state.valueOrNull ?? [];
+    final display = <_ChatMessage>[
+      _greeting,
+      ...providerMsgs.map((m) => _ChatMessage(
+            isAi: m.role == 'assistant',
+            text: m.text,
+            time: timeStr,
+            isImage: m.imageBase64 != null && m.role == 'user',
+            imageName: 'Ảnh đính kèm',
+          )),
+    ];
+
+    if (state.isLoading) {
+      display.add(const _ChatMessage(
+        isAi: true,
+        text: 'Đang kiểm tra dấu hiệu lừa đảo...',
+        time: '',
+        isAnalyzing: true,
+      ));
+    }
+
+    if (state.hasError) {
+      display.add(const _ChatMessage(
+        isAi: true,
+        text: '⚠️ Không thể kết nối. Vui lòng thử lại.',
+        time: '',
+      ));
+    }
+
+    return display;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(p.chatProvider);
+    final messages = _buildDisplayMessages(chatState);
+
     return BottomNavShell(
       currentIndex: 1,
       child: Scaffold(
@@ -90,8 +125,7 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, size: 26),
               style: IconButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                    borderRadius: BorderRadius.circular(14)),
               ),
             ),
           ),
@@ -102,47 +136,32 @@ class _ChatScreenState extends State<ChatScreen> {
                 width: 40,
                 height: 40,
                 decoration: const BoxDecoration(
-                  color: AppColors.shieldTeal,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.shield_rounded,
-                  size: 22,
-                  color: Colors.white,
-                ),
+                    color: AppColors.shieldTeal, shape: BoxShape.circle),
+                child: const Icon(Icons.shield_rounded,
+                    size: 22, color: Colors.white),
               ),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'ScamShield AI',
-                    style: GoogleFonts.nunito(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                  Text('ScamShield AI',
+                      style: GoogleFonts.beVietnamPro(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary)),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.alertGreen,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                              color: AppColors.alertGreen,
+                              shape: BoxShape.circle)),
                       const SizedBox(width: 5),
-                      Text(
-                        'Đang hoạt động',
-                        style: GoogleFonts.nunito(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.alertGreen,
-                        ),
-                      ),
+                      Text('Đang hoạt động',
+                          style: GoogleFonts.beVietnamPro(
+                              fontSize: 13, color: AppColors.alertGreen)),
                     ],
                   ),
                 ],
@@ -155,40 +174,31 @@ class _ChatScreenState extends State<ChatScreen> {
               width: 56,
               height: 56,
               child: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.more_vert_rounded, size: 26),
+                onPressed: () => ref.read(p.chatProvider.notifier).reset(),
+                icon: const Icon(Icons.refresh_rounded, size: 26),
                 style: IconButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14))),
               ),
             ),
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(
-              height: 1,
-              color: AppColors.divider,
-            ),
+            child: Container(height: 1, color: AppColors.divider),
           ),
         ),
         body: Column(
           children: [
-            // Chat messages
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
-                reverse: false,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final msg = _messages[index];
-                  return _buildMessageBubble(msg);
-                },
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                itemCount: messages.length,
+                itemBuilder: (context, index) =>
+                    _buildMessageBubble(messages[index]),
               ),
             ),
-            // Input bar
             _buildInputBar(),
           ],
         ),
@@ -203,68 +213,51 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.75,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: AppColors.shieldTeal.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.shieldTeal.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.image_rounded,
-                          size: 48,
-                          color: AppColors.shieldTeal.withValues(alpha: 0.6),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '📎 ${msg.imageName}',
-                          style: GoogleFonts.nunito(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: AppColors.shieldTeal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                        color: AppColors.shieldTeal.withValues(alpha: 0.3)),
                   ),
-                  const SizedBox(height: 6),
-                  // Shimmer loading
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.shieldTeal.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Đang phân tích...',
-                        style: GoogleFonts.nunito(
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.shieldTeal,
-                        ),
-                      ),
+                      Icon(Icons.image_rounded,
+                          size: 48,
+                          color: AppColors.shieldTeal.withValues(alpha: 0.6)),
+                      const SizedBox(height: 8),
+                      Text('📎 ${msg.imageName}',
+                          style: GoogleFonts.beVietnamPro(
+                              fontSize: 14, color: AppColors.textSecondary)),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.shieldTeal.withValues(alpha: 0.6)),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Đang phân tích...',
+                        style: GoogleFonts.beVietnamPro(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.shieldTeal)),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -277,36 +270,22 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // AI avatar
-            Container(
-              width: 28,
-              height: 28,
-              decoration: const BoxDecoration(
-                color: AppColors.shieldTeal,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.shield_rounded,
-                size: 16,
-                color: Colors.white,
-              ),
-            ),
+            _aiAvatar(),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: AppColors.surfaceWhite,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(4),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                  bottomRight: Radius.circular(18),
-                ),
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(18),
+                    bottomLeft: Radius.circular(18),
+                    bottomRight: Radius.circular(18)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Typing dots
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(
@@ -316,21 +295,19 @@ class _ChatScreenState extends State<ChatScreen> {
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: AppColors.shieldTeal.withValues(alpha: 0.4 + (i * 0.2)),
+                          color: AppColors.shieldTeal
+                              .withValues(alpha: 0.4 + (i * 0.2)),
                           shape: BoxShape.circle,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    msg.text,
-                    style: GoogleFonts.nunito(
-                      fontSize: 16,
-                      fontStyle: FontStyle.italic,
-                      color: AppColors.shieldTeal,
-                    ),
-                  ),
+                  Text(msg.text,
+                      style: GoogleFonts.beVietnamPro(
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.shieldTeal)),
                 ],
               ),
             ),
@@ -340,58 +317,40 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (msg.isAi) {
-      // AI bubble (left)
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: const BoxDecoration(
-                color: AppColors.shieldTeal,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.shield_rounded,
-                size: 16,
-                color: Colors.white,
-              ),
-            ),
+            _aiAvatar(),
             const SizedBox(width: 8),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                     decoration: const BoxDecoration(
                       color: AppColors.surfaceWhite,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        topRight: Radius.circular(18),
-                        bottomLeft: Radius.circular(18),
-                        bottomRight: Radius.circular(18),
-                      ),
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(18),
+                          bottomLeft: Radius.circular(18),
+                          bottomRight: Radius.circular(18)),
                     ),
-                    child: Text(
-                      msg.text,
-                      style: GoogleFonts.nunito(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
+                    child: Text(msg.text,
+                        style: GoogleFonts.beVietnamPro(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textPrimary)),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    msg.time,
-                    style: GoogleFonts.nunito(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  if (msg.time.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(msg.time,
+                        style: GoogleFonts.beVietnamPro(
+                            fontSize: 12, color: AppColors.textSecondary)),
+                  ],
                 ],
               ),
             ),
@@ -411,33 +370,28 @@ class _ChatScreenState extends State<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: const BoxDecoration(
                     color: AppColors.shieldTeal,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(4),
-                      bottomLeft: Radius.circular(18),
-                      bottomRight: Radius.circular(18),
-                    ),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(18),
+                        topRight: Radius.circular(4),
+                        bottomLeft: Radius.circular(18),
+                        bottomRight: Radius.circular(18)),
                   ),
-                  child: Text(
-                    msg.text,
-                    style: GoogleFonts.nunito(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: Text(msg.text,
+                      style: GoogleFonts.beVietnamPro(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white)),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  msg.time,
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                if (msg.time.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(msg.time,
+                      style: GoogleFonts.beVietnamPro(
+                          fontSize: 12, color: AppColors.textSecondary)),
+                ],
               ],
             ),
           ),
@@ -446,6 +400,14 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Widget _aiAvatar() => Container(
+        width: 28,
+        height: 28,
+        decoration: const BoxDecoration(
+            color: AppColors.shieldTeal, shape: BoxShape.circle),
+        child: const Icon(Icons.shield_rounded, size: 16, color: Colors.white),
+      );
+
   Widget _buildInputBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -453,117 +415,117 @@ class _ChatScreenState extends State<ChatScreen> {
         color: AppColors.surfaceWhite,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, -4)),
         ],
       ),
       child: SafeArea(
         top: false,
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Camera
-            SizedBox(
-              width: 56,
-              height: 56,
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.camera_alt_rounded,
-                  color: AppColors.shieldTeal,
-                  size: 26,
-                ),
-                style: IconButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            // Gallery
-            SizedBox(
-              width: 56,
-              height: 56,
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.photo_library_rounded,
-                  color: AppColors.shieldTeal,
-                  size: 26,
-                ),
-                style: IconButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            // Microphone
-            SizedBox(
-              width: 56,
-              height: 56,
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.mic_rounded,
-                  color: AppColors.shieldTeal,
-                  size: 26,
-                ),
-                style: IconButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Text input
-            Expanded(
-              child: Container(
-                height: 52,
+            if (_pendingImageBase64 != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(14),
+                  color: AppColors.shieldTealBg,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: TextField(
-                  controller: _messageController,
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    color: AppColors.textPrimary,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Nhập hoặc dán nội dung...',
-                    hintStyle: GoogleFonts.nunito(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
+                child: Row(
+                  children: [
+                    const Icon(Icons.image_rounded,
+                        color: AppColors.shieldTeal, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                        child: Text('Ảnh đã chọn',
+                            style: TextStyle(color: AppColors.shieldTeal))),
+                    GestureDetector(
+                      onTap: () =>
+                          setState(() => _pendingImageBase64 = null),
+                      child: const Icon(Icons.close,
+                          size: 18, color: AppColors.textSecondary),
                     ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            // Send button
-            SizedBox(
-              width: 48,
-              height: 48,
-              child: IconButton(
-                onPressed: _sendMessage,
-                icon: const Icon(
-                  Icons.send_rounded,
-                  color: Colors.white,
-                  size: 22,
+            Row(
+              children: [
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: IconButton(
+                    onPressed: () => _pickImage(ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt_rounded,
+                        color: AppColors.shieldTeal, size: 26),
+                    style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14))),
+                  ),
                 ),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.shieldTeal,
-                  shape: const CircleBorder(),
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: IconButton(
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library_rounded,
+                        color: AppColors.shieldTeal, size: 26),
+                    style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14))),
+                  ),
                 ),
-              ),
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.mic_rounded,
+                        color: AppColors.shieldTeal, size: 26),
+                    style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14))),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: TextField(
+                      controller: _messageController,
+                      style: GoogleFonts.beVietnamPro(
+                          fontSize: 16, color: AppColors.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'Nhập hoặc dán nội dung...',
+                        hintStyle: GoogleFonts.beVietnamPro(
+                            fontSize: 16, color: AppColors.textSecondary),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: IconButton(
+                    onPressed: _sendMessage,
+                    icon: const Icon(Icons.send_rounded,
+                        color: Colors.white, size: 22),
+                    style: IconButton.styleFrom(
+                        backgroundColor: AppColors.shieldTeal,
+                        shape: const CircleBorder()),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -580,7 +542,7 @@ class _ChatMessage {
   final bool isAnalyzing;
   final String? imageName;
 
-  _ChatMessage({
+  const _ChatMessage({
     required this.isAi,
     required this.text,
     required this.time,

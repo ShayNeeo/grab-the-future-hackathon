@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/ui/widgets/shield_button.dart';
@@ -13,7 +13,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Cài đặt',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
@@ -58,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Text(
                         'BL',
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -72,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Bà Lan',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -81,7 +81,7 @@ class SettingsScreen extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Thành viên từ 2024',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
                               color: Colors.white.withValues(alpha: 0.8),
@@ -105,7 +105,7 @@ class SettingsScreen extends StatelessWidget {
                           horizontal: 16,
                           vertical: 10,
                         ),
-                        textStyle: GoogleFonts.nunito(
+                        textStyle: GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -132,7 +132,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Switch(
                         value: true,
                         onChanged: (v) {},
-                        activeColor: AppColors.shieldTeal,
+                        activeThumbColor: AppColors.shieldTeal,
                         activeTrackColor: AppColors.shieldTeal.withValues(alpha: 0.3),
                       ),
                     ),
@@ -148,7 +148,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Switch(
                         value: false,
                         onChanged: (v) {},
-                        activeColor: AppColors.shieldTeal,
+                        activeThumbColor: AppColors.shieldTeal,
                         activeTrackColor: AppColors.shieldTeal.withValues(alpha: 0.3),
                       ),
                     ),
@@ -166,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'Cao',
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.shieldTeal,
@@ -198,7 +198,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Switch(
                         value: false,
                         onChanged: (v) {},
-                        activeColor: AppColors.shieldTeal,
+                        activeThumbColor: AppColors.shieldTeal,
                         activeTrackColor: AppColors.shieldTeal.withValues(alpha: 0.3),
                       ),
                     ),
@@ -278,7 +278,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: GoogleFonts.nunito(
+      style: GoogleFonts.beVietnamPro(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
@@ -336,7 +336,7 @@ class _SettingsTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textPrimary,
@@ -346,7 +346,7 @@ class _SettingsTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,
@@ -400,7 +400,7 @@ class _SegmentButton extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.nunito(
+        style: GoogleFonts.beVietnamPro(
           fontSize: 13,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           color: isSelected ? Colors.white : AppColors.textSecondary,

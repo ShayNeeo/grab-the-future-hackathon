@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 
@@ -35,7 +35,7 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -44,7 +44,7 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
