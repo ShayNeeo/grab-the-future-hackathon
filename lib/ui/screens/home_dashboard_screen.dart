@@ -1,17 +1,158 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
+import 'package:scamshield/src/models/sms_alert.dart';
+import 'package:scamshield/src/services/sms_detection_service.dart';
 import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
 import 'package:scamshield/ui/widgets/stat_card.dart';
 
-class HomeDashboardScreen extends StatelessWidget {
+class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
+
+  // Change this to true to enable the SMS Web Simulator UI
+  static const bool showSmsSimulator = false;
+
+  @override
+  ConsumerState<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
+}
+
+class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
+  List<SmsAlert> _alerts = [];
+  bool _isLoading = true;
+  final TextEditingController _senderController = TextEditingController();
+  final TextEditingController _bodyController = TextEditingController();
+  bool _isSimulating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAlerts();
+  }
+
+  @override
+  void dispose() {
+    _senderController.dispose();
+    _bodyController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAlerts() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final List<String> list = prefs.getStringList('sms_alerts') ?? [];
+      final List<SmsAlert> parsed = list.map((item) {
+        return SmsAlert.fromJson(json.decode(item) as Map<String, dynamic>);
+      }).toList();
+      setState(() {
+        _alerts = parsed;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Chào buổi sáng';
     if (hour < 18) return 'Chào buổi chiều';
     return 'Chào buổi tối';
+  }
+
+  void _showAlertDetails(SmsAlert alert) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: AppColors.alertRed),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Cảnh báo từ ${alert.sender}',
+                  style: GoogleFonts.beVietnamPro(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Nội dung tin nhắn:',
+                  style: GoogleFonts.beVietnamPro(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    alert.body,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Giải thích từ ScamShield:',
+                  style: GoogleFonts.beVietnamPro(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  alert.explanation,
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Đóng',
+                style: GoogleFonts.beVietnamPro(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.shieldTeal,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -152,6 +293,115 @@ class HomeDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
+              if (HomeDashboardScreen.showSmsSimulator) ...[
+                // ── SMS Simulator Card ──
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceWhite,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.shieldTeal.withValues(alpha: 0.15),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.sms_rounded, color: AppColors.shieldTeal, size: 24),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Giả lập nhận SMS (Kiểm thử Web)',
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _senderController,
+                        decoration: InputDecoration(
+                          labelText: 'Tên người gửi / Số điện thoại',
+                          hintText: 'Ví dụ: NHANHANG-SHB hoặc +84912345678',
+                          labelStyle: GoogleFonts.beVietnamPro(fontSize: 14),
+                          hintStyle: GoogleFonts.beVietnamPro(fontSize: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        ),
+                        style: GoogleFonts.beVietnamPro(fontSize: 16),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _bodyController,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText: 'Nội dung tin nhắn',
+                          hintText: 'Ví dụ: Tai khoan cua ban bi khoa. Vui long dang nhap...',
+                          labelStyle: GoogleFonts.beVietnamPro(fontSize: 14),
+                          hintStyle: GoogleFonts.beVietnamPro(fontSize: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        ),
+                        style: GoogleFonts.beVietnamPro(fontSize: 16),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _isSimulating ? null : () async {
+                            final sender = _senderController.text.trim();
+                            final body = _bodyController.text.trim();
+                            if (sender.isEmpty || body.isEmpty) return;
+                            
+                            setState(() { _isSimulating = true; });
+                            
+                            // Trigger processing SMS
+                            await SmsDetectionService.processSms(sender, body);
+                            
+                            // Reload list
+                            await _loadAlerts();
+                            
+                            setState(() { _isSimulating = false; });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.shieldTeal,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isSimulating
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  'Giả lập nhận tin nhắn',
+                                  style: GoogleFonts.beVietnamPro(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
               // ── Quick Action Card ──
               Semantics(
                 label: 'Kiểm tra ngay — Gửi ảnh, tin nhắn hoặc ghi âm để kiểm tra lừa đảo',
@@ -268,6 +518,119 @@ class HomeDashboardScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 28),
+
+              // ── Automatic SMS Spam Alerts ──
+              Text(
+                'Tin nhắn rác đã cảnh báo',
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (_isLoading)
+                const Center(
+                  child: CircularProgressIndicator(color: AppColors.shieldTeal),
+                )
+              else if (_alerts.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.alertGreen.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.alertGreen.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle_outline_rounded,
+                          color: AppColors.alertGreen, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Thiết bị an toàn! Chưa phát hiện tin nhắn lừa đảo nào.',
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.alertGreen,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ..._alerts.map((alert) {
+                  final isCritical = alert.riskLevel == 'critical';
+                  final accentColor = isCritical ? AppColors.alertRed : AppColors.alertOrange;
+                  final timeStr = DateFormat('HH:mm, dd/MM').format(alert.timestamp);
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () => _showAlertDetails(alert),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceWhite,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border(left: BorderSide(color: accentColor, width: 4)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.sms_failed_rounded, size: 28, color: accentColor),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    alert.sender,
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    alert.body,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Phát hiện lúc $timeStr',
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.info_outline_rounded,
+                              size: 24,
+                              color: AppColors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               const SizedBox(height: 28),
 
               // ── Recent Cases ──

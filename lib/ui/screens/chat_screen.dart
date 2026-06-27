@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:scamshield/app/routes.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/src/providers/chat_provider.dart' as p;
+import 'package:scamshield/src/models/analysis_response.dart';
 import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -37,8 +38,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _pendingImageBase64 = base64Encode(bytes));
   }
 
-  void _sendMessage() {
-    final text = _messageController.text.trim();
+  void _sendMessage([String? overrideText]) {
+    final text = overrideText ?? _messageController.text.trim();
     if (text.isEmpty && _pendingImageBase64 == null) return;
     ref.read(p.chatProvider.notifier).send(
           text: text.isEmpty ? '[Ảnh đính kèm]' : text,
@@ -83,6 +84,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             time: timeStr,
             isImage: m.imageBase64 != null && m.role == 'user',
             imageName: 'Ảnh đính kèm',
+            followUpQuestions: m.followUpQuestions,
+            isStreaming: m.isStreaming,
+            thinkingText: m.thinkingText,
+            response: m.response,
           )),
     ];
 
@@ -114,11 +119,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (prev?.isLoading == true && next.hasValue) {
         final msgs = next.value!;
         if (msgs.isNotEmpty && msgs.last.response != null) {
-          Navigator.pushNamed(
-            context,
-            AppRoutes.scamResult,
-            arguments: msgs.last.response,
-          );
+          // Only navigate to result card when there are NO follow-up questions
+          // (i.e., the agentic loop is complete)
+          if (msgs.last.followUpQuestions.isEmpty) {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.scamResult,
+              arguments: msgs.last.response,
+            );
+          }
+          _scrollToBottom();
         }
       }
     });
@@ -348,23 +358,120 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceWhite,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(4),
-                          topRight: Radius.circular(18),
-                          bottomLeft: Radius.circular(18),
-                          bottomRight: Radius.circular(18)),
+                  if (msg.text.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surfaceWhite,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(4),
+                            topRight: Radius.circular(18),
+                            bottomLeft: Radius.circular(18),
+                            bottomRight: Radius.circular(18)),
+                      ),
+                      child: Text(msg.text,
+                          style: GoogleFonts.beVietnamPro(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textPrimary)),
                     ),
-                    child: Text(msg.text,
-                        style: GoogleFonts.beVietnamPro(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textPrimary)),
-                  ),
+                  if (msg.isStreaming) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceWhite,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.shieldTeal.withValues(alpha: 0.15),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.shieldTeal,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _getFriendlyThinkingStatus(msg.thinkingText),
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.shieldTeal,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (msg.response != null && msg.response!.suggestedReply.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Builder(
+                      builder: (context) {
+                        final isBlockAdvice = msg.response!.suggestedReply.contains('Chặn');
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isBlockAdvice ? AppColors.redTint : AppColors.shieldTealBg,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isBlockAdvice 
+                                  ? AppColors.alertRed.withValues(alpha: 0.25)
+                                  : AppColors.shieldTeal.withValues(alpha: 0.25),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    isBlockAdvice ? Icons.gpp_bad_rounded : Icons.lightbulb_outline_rounded,
+                                    size: 20, 
+                                    color: isBlockAdvice ? AppColors.alertRed : AppColors.shieldTeal
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    isBlockAdvice ? 'Khuyên dùng an toàn:' : 'Gợi ý trả lời đối phương:',
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: isBlockAdvice ? AppColors.alertRed : AppColors.shieldTeal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                isBlockAdvice ? 'Bác nên: ${msg.response!.suggestedReply}' : '"${msg.response!.suggestedReply}"',
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  fontStyle: isBlockAdvice ? FontStyle.normal : FontStyle.italic,
+                                  color: isBlockAdvice ? AppColors.alertRed : AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    ),
+                  ],
+                  if (msg.followUpQuestions.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    _buildFollowUpChips(msg.followUpQuestions),
+                  ],
                   if (msg.time.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(msg.time,
@@ -428,10 +535,86 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: const Icon(Icons.shield_rounded, size: 16, color: Colors.white),
       );
 
+  String _getFriendlyThinkingStatus(String thinkingText) {
+    final text = thinkingText.toLowerCase();
+    if (text.contains('intake') || text.contains('trích xuất')) {
+      return 'Kính chào bác! AI đang tiếp nhận tin nhắn...';
+    } else if (text.contains('red_flag') || text.contains('red flag') || text.contains('dấu hiệu')) {
+      return 'AI đang đối chiếu các dấu hiệu lừa đảo phổ biến...';
+    } else if (text.contains('pressure') || text.contains('manipulation') || text.contains('thao túng')) {
+      return 'AI đang kiểm tra các chiến thuật tâm lý của đối phương...';
+    } else if (text.contains('contract') || text.contains('hợp đồng') || text.contains('điều khoản')) {
+      return 'AI đang quét chi tiết các điều khoản hợp đồng/tài liệu...';
+    }
+    return 'Lá chắn ScamShield đang kiểm tra độ an toàn cho bác...';
+  }
+
+  /// Renders follow-up questions as tappable suggestion chips.
+  /// Tapping a chip sends it as the user's next message in the agentic loop.
+  Widget _buildFollowUpChips(List<String> questions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 2, bottom: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.help_outline_rounded,
+                  size: 16,
+                  color: AppColors.shieldTeal.withValues(alpha: 0.7)),
+              const SizedBox(width: 4),
+              Text(
+                'Cho tôi biết thêm:',
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.shieldTeal.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: questions.map((q) {
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _sendMessage(q),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.shieldTealBg,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.shieldTeal.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    q,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.shieldTeal,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -644,6 +827,10 @@ class _ChatMessage {
   final bool isImage;
   final bool isAnalyzing;
   final String? imageName;
+  final List<String> followUpQuestions;
+  final bool isStreaming;
+  final String thinkingText;
+  final AnalysisResponse? response;
 
   const _ChatMessage({
     required this.isAi,
@@ -652,6 +839,10 @@ class _ChatMessage {
     this.isImage = false,
     this.isAnalyzing = false,
     this.imageName,
+    this.followUpQuestions = const [],
+    this.isStreaming = false,
+    this.thinkingText = '',
+    this.response,
   });
 }
 
