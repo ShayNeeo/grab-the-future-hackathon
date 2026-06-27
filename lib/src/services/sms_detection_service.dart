@@ -46,14 +46,18 @@ class SmsDetectionService {
     if (_initialized) return;
     _initialized = true;
 
-    debugPrint('$_tag initializing notification plugin...');
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-    debugPrint('$_tag notification plugin initialized');
+    try {
+      debugPrint('$_tag initializing notification plugin...');
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+      );
+      await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+      debugPrint('$_tag notification plugin initialized');
+    } catch (e) {
+      debugPrint('$_tag notification plugin init failed: $e');
+    }
 
     if (kIsWeb) {
       debugPrint('$_tag running on web — SMS listener skipped');
@@ -64,22 +68,27 @@ class SmsDetectionService {
       return;
     }
 
-    debugPrint('$_tag requesting SMS + Phone permissions...');
-    final bool? permission = await telephony.requestPhoneAndSmsPermissions;
-    debugPrint('$_tag permission result: $permission');
+    try {
+      debugPrint('$_tag requesting SMS + Phone permissions...');
+      final bool? permission = await telephony.requestPhoneAndSmsPermissions
+          .timeout(const Duration(seconds: 10), onTimeout: () => false);
+      debugPrint('$_tag permission result: $permission');
 
-    if (permission == true) {
-      debugPrint('$_tag permission granted — starting listenIncomingSms');
-      telephony.listenIncomingSms(
-        onNewMessage: (SmsMessage message) {
-          debugPrint('$_tag onNewMessage — from: ${message.address}, body: ${message.body}');
-          processSms(message.address ?? 'Người lạ', message.body ?? '');
-        },
-        onBackgroundMessage: backGroundMessageHandler,
-      );
-      debugPrint('$_tag SMS listener registered successfully');
-    } else {
-      debugPrint('$_tag permission DENIED — SMS interception will not work');
+      if (permission == true) {
+        debugPrint('$_tag permission granted — starting listenIncomingSms');
+        telephony.listenIncomingSms(
+          onNewMessage: (SmsMessage message) {
+            debugPrint('$_tag onNewMessage — from: ${message.address}, body: ${message.body}');
+            processSms(message.address ?? 'Người lạ', message.body ?? '');
+          },
+          onBackgroundMessage: backGroundMessageHandler,
+        );
+        debugPrint('$_tag SMS listener registered successfully');
+      } else {
+        debugPrint('$_tag permission DENIED — SMS interception will not work');
+      }
+    } catch (e) {
+      debugPrint('$_tag SMS permission request failed: $e');
     }
   }
 
