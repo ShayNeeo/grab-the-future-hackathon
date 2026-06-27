@@ -528,6 +528,74 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
               ),
               const SizedBox(height: 28),
 
+              // ── Live Monitor Card ──
+              Semantics(
+                label: 'Giám sát cuộc gọi trực tiếp — phát hiện lừa đảo real-time',
+                button: true,
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/live-monitor'),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.alertRed.withValues(alpha: 0.2),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: AppColors.alertRed.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.mic_external_on_rounded,
+                            size: 28,
+                            color: AppColors.alertRed,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Giám sát cuộc gọi',
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Phát hiện lừa đảo real-time khi đang nghe điện thoại',
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
               // ── Automatic SMS Spam Alerts ──
               Text(
                 'Tin nhắn rác đã cảnh báo',
