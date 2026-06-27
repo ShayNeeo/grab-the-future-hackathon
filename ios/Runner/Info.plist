@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Justful cần quyền truy cập micro để chuyển giọng nói của bạn thành văn bản.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Justful cần quyền Nhận diện giọng nói để chuyển giọng nói của bạn thành văn bản.</string>
 </dict>
 </plist>

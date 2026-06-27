@@ -9,6 +9,7 @@ import 'package:justful/core/theme/app_colors.dart';
 import 'package:justful/src/providers/chat_provider.dart' as p;
 import 'package:justful/src/models/analysis_response.dart';
 import 'package:justful/ui/widgets/bottom_nav_shell.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -22,11 +23,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
   String? _pendingImageBase64;
+  
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _speechAvailable = false;
+  bool _isListening = false;
+  String _transcribedWords = '';
+  bool _useVoiceMode = true;
 
   static const _greeting = _ChatMessage(
     isAi: true,
     text:
-        'Xin chào Bà Lan! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
+        'Xin chào bà! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
     time: '',
   );
 
@@ -37,6 +44,75 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final bytes = await File(xFile.path).readAsBytes();
     setState(() => _pendingImageBase64 = base64Encode(bytes));
   }
+
+  Future<void> _initSpeech() async {
+    if (_speechAvailable) return;
+    try {
+      final available = await _speech.initialize(
+        onError: (val) {
+          debugPrint('Speech error: $val');
+          if (!mounted) return;
+          setState(() => _isListening = false);
+        },
+        onStatus: (val) {
+          debugPrint('Speech status: $val');
+          if (val == 'done' || val == 'notListening') {
+            if (!mounted) return;
+            setState(() => _isListening = false);
+          }
+        },
+      );
+      if (!mounted) return;
+      setState(() {
+        _speechAvailable = available;
+      });
+    } catch (e) {
+      debugPrint('Speech initialization failed: $e');
+    }
+  }
+
+  void _startListening() async {
+    await _initSpeech();
+    if (!mounted) return;
+    if (_speechAvailable) {
+      setState(() {
+        _isListening = true;
+        _transcribedWords = '';
+      });
+      
+      try {
+        await _speech.listen(
+          onResult: (val) {
+            if (!mounted) return;
+            setState(() {
+              _transcribedWords = val.recognizedWords;
+            });
+          },
+          listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
+        );
+      } catch (e) {
+        debugPrint('Speech listen error: $e');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  void _stopListening() async {
+    try {
+      await _speech.stop();
+    } catch (e) {
+      debugPrint('Speech stop error: $e');
+    }
+    setState(() => _isListening = false);
+  }
+
+
 
   void _sendMessage([String? overrideText]) {
     final text = overrideText ?? _messageController.text.trim();
@@ -64,6 +140,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    _speech.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -217,19 +294,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         body: Column(
           children: [
+            _buildModeSwitcher(),
             Expanded(
-              child: messages.length <= 1
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) =>
-                          _buildMessageBubble(messages[index]),
-                    ),
+              child: _useVoiceMode
+                  ? _buildVoiceModeView()
+                  : (messages.length <= 1
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) =>
+                              _buildMessageBubble(messages[index]),
+                        )),
             ),
-            _buildInputBar(),
+            if (!_useVoiceMode) _buildInputBar(),
           ],
         ),
       ),
@@ -611,6 +691,325 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
+  Widget _buildModeSwitcher() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider, width: 1),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              label: 'Chế độ Nói chuyện bằng giọng nói',
+              button: true,
+              selected: _useVoiceMode,
+              child: InkWell(
+                onTap: () {
+                  if (!_useVoiceMode) {
+                    setState(() {
+                      _useVoiceMode = true;
+                    });
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: _useVoiceMode ? AppColors.shieldTeal : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.mic_rounded,
+                        color: _useVoiceMode ? Colors.white : AppColors.textSecondary,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Nói chuyện',
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _useVoiceMode ? Colors.white : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Semantics(
+              label: 'Chế độ Nhắn tin văn bản',
+              button: true,
+              selected: !_useVoiceMode,
+              child: InkWell(
+                onTap: () {
+                  if (_useVoiceMode) {
+                    setState(() {
+                      _useVoiceMode = false;
+                    });
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: !_useVoiceMode ? AppColors.shieldTeal : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.keyboard_rounded,
+                        color: !_useVoiceMode ? Colors.white : AppColors.textSecondary,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Nhắn tin',
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: !_useVoiceMode ? Colors.white : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceModeView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Friendly large prompt box for the elderly
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.shieldTealBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.shieldTeal.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Chào bà,',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.shieldTeal,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bà hãy nhấn nút tròn to ở giữa màn hình rồi đọc tin nhắn hoặc kể lại sự việc nghi ngờ lừa đảo. Con sẽ kiểm tra ngay giúp bà!',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          // Large Centered Voice Button
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (_isListening) {
+                      _stopListening();
+                    } else {
+                      _startListening();
+                    }
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shieldTeal.withValues(
+                            alpha: _isListening ? 0.4 : 0.2,
+                          ),
+                          blurRadius: _isListening ? 24 : 12,
+                          spreadRadius: _isListening ? 6 : 2,
+                        )
+                      ],
+                    ),
+                    child: _isListening
+                        ? const _SpeechPulseAnimation()
+                        : Container(
+                            decoration: const BoxDecoration(
+                              color: AppColors.shieldTeal,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.mic_rounded,
+                              color: Colors.white,
+                              size: 72,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _isListening ? 'Đang lắng nghe... Chạm để Dừng' : 'Chạm vào để Nói',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _isListening ? Colors.redAccent : AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 36),
+          // Preview transcribed text area
+          Text(
+            'Nội dung nhận diện giọng nói:',
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 120),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _isListening
+                    ? AppColors.shieldTeal.withValues(alpha: 0.4)
+                    : AppColors.divider,
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              _transcribedWords.isEmpty
+                  ? (_isListening ? 'Bà hãy nói đi, con đang nghe...' : 'Giọng nói của bà sẽ xuất hiện ở đây...')
+                  : _transcribedWords,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 20,
+                color: _transcribedWords.isEmpty ? AppColors.textSecondary : AppColors.textPrimary,
+                height: 1.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Large clear and send buttons
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 60,
+                  child: OutlinedButton(
+                    onPressed: _transcribedWords.isEmpty
+                        ? null
+                        : () {
+                            setState(() {
+                              _transcribedWords = '';
+                            });
+                          },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: _transcribedWords.isEmpty
+                            ? AppColors.divider
+                            : AppColors.textSecondary,
+                        width: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      'Xóa nói lại',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: _transcribedWords.isEmpty
+                            ? AppColors.textSecondary.withValues(alpha: 0.5)
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SizedBox(
+                  height: 60,
+                  child: ElevatedButton(
+                    onPressed: _transcribedWords.trim().isEmpty
+                        ? null
+                        : () {
+                            final speechText = _transcribedWords;
+                            setState(() {
+                              _transcribedWords = '';
+                              _useVoiceMode = false;
+                            });
+                            _sendMessage(speechText);
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.shieldTeal,
+                      foregroundColor: Colors.white,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      disabledBackgroundColor: AppColors.shieldTeal.withValues(alpha: 0.3),
+                    ),
+                    child: Text(
+                      'Gửi kiểm tra',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: SingleChildScrollView(
@@ -767,10 +1166,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   width: 56,
                   height: 56,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _useVoiceMode = true;
+                      });
+                    },
                     icon: const Icon(Icons.mic_rounded,
                         color: AppColors.shieldTeal, size: 26),
-                    tooltip: 'Ghi âm',
+                    tooltip: 'Chuyển sang Nói chuyện',
 
                     style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -910,6 +1313,72 @@ class _SuggestionChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SpeechPulseAnimation extends StatefulWidget {
+  const _SpeechPulseAnimation();
+
+  @override
+  State<_SpeechPulseAnimation> createState() => _SpeechPulseAnimationState();
+}
+
+class _SpeechPulseAnimationState extends State<_SpeechPulseAnimation>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            ...List.generate(3, (index) {
+              final scale = 1.0 + (index + 1) * 0.3 * _controller.value;
+              final opacity = 0.6 - (index + 1) * 0.15 - (0.3 * _controller.value);
+              return Container(
+                width: 80 * scale,
+                height: 80 * scale,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.shieldTeal.withValues(alpha: opacity.clamp(0.0, 1.0)),
+                ),
+              );
+            }),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: AppColors.shieldTeal,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.mic_rounded,
+                color: Colors.white,
+                size: 38,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

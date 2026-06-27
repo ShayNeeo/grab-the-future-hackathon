@@ -1,3 +1,25 @@
+// Automatically patch third-party speech_to_text package build.gradle to remove deprecated jcenter() call on Gradle 9+
+try {
+    val pubCacheDir = java.io.File(System.getProperty("user.home"), ".pub-cache")
+    if (pubCacheDir.exists()) {
+        val hostedDir = java.io.File(pubCacheDir, "hosted")
+        if (hostedDir.exists()) {
+            hostedDir.walkTopDown().forEach { file ->
+                if (file.name == "build.gradle" && file.parentFile.parentFile.name.startsWith("speech_to_text")) {
+                    var content = file.readText()
+                    if (content.contains("jcenter()")) {
+                        content = content.replace("jcenter()", "mavenCentral()")
+                        file.writeText(content)
+                        println("Successfully patched ${file.absolutePath} to replace jcenter() with mavenCentral()")
+                    }
+                }
+            }
+        }
+    }
+} catch (e: Exception) {
+    println("Failed to patch speech_to_text legacy repositories: ${e.message}")
+}
+
 pluginManagement {
     val flutterSdkPath =
         run {
