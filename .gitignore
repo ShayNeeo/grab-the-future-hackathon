@@ -1,19 +1,27 @@
-# Python
+# ── Flutter / Dart ──────────────────────────────────────────────
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+*.iml
+*.log
+doc/api/
+
+# Keep pubspec.lock committed (reproducible builds for apps)
+
+# ── Python (scamshield_api) ──────────────────────────────────────
 __pycache__/
 *.py[cod]
-.env
 *.egg-info/
 .venv/
 venv/
+.env
 
-# Flutter
-scamshield_app/.dart_tool/
-scamshield_app/build/
-scamshield_app/.flutter-plugins
-scamshield_app/.flutter-plugins-dependencies
-scamshield_app/pubspec.lock
-
-# IDE
+# ── IDE ──────────────────────────────────────────────────────────
 .vscode/
 .idea/
-*.iml
+
+# ── OS ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

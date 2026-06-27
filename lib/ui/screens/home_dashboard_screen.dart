@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
@@ -34,7 +34,7 @@ class HomeDashboardScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Xin chào, Bà Lan 👋',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -43,7 +43,7 @@ class HomeDashboardScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             'Hôm nay bạn có gì cần kiểm tra không?',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                               color: Colors.white.withValues(alpha: 0.8),
@@ -114,7 +114,7 @@ class HomeDashboardScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         'Kiểm tra ngay',
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -123,7 +123,7 @@ class HomeDashboardScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         'Gửi ảnh, tin nhắn hoặc ghi âm',
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                           color: Colors.white.withValues(alpha: 0.85),
@@ -185,7 +185,7 @@ class HomeDashboardScreen extends StatelessWidget {
               // ── Recent Cases ──
               Text(
                 'Lịch sử gần đây',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -242,7 +242,7 @@ class _ActionChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.nunito(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Colors.white,
@@ -286,7 +286,7 @@ class _CaseCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -295,7 +295,7 @@ class _CaseCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textSecondary,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/ui/widgets/risk_badge.dart';
@@ -14,7 +14,7 @@ class ScamResultCardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Kết quả phân tích',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
@@ -74,7 +74,7 @@ class ScamResultCardScreen extends StatelessWidget {
                             ),
                             child: Text(
                               'Hợp đồng kỳ nghỉ',
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.shieldTeal,
@@ -84,7 +84,7 @@ class ScamResultCardScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           Text(
                             'Giai đoạn: Trước khi đặt cọc',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                               color: AppColors.textSecondary,
@@ -95,7 +95,7 @@ class ScamResultCardScreen extends StatelessWidget {
                           // Red flags section
                           Text(
                             'Dấu hiệu nguy hiểm phát hiện được',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
@@ -144,7 +144,7 @@ class ScamResultCardScreen extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Kỹ thuật thao túng tâm lý',
-                                      style: GoogleFonts.nunito(
+                                      style: GoogleFonts.beVietnamPro(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: AppColors.textPrimary,
@@ -192,7 +192,7 @@ class ScamResultCardScreen extends StatelessWidget {
                 onPressed: () {},
                 child: Text(
                   '📤 Gửi cho người thân',
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.shieldTeal,
@@ -237,7 +237,7 @@ class _RedFlagRow extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$number',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -251,7 +251,7 @@ class _RedFlagRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -260,7 +260,7 @@ class _RedFlagRow extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 15,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textSecondary,
@@ -294,7 +294,7 @@ class _TacticPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.nunito(
+        style: GoogleFonts.beVietnamPro(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,

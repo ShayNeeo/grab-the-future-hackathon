@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 
@@ -77,7 +77,7 @@ class RiskBadge extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             risk.label,
-            style: GoogleFonts.nunito(
+            style: GoogleFonts.beVietnamPro(
               fontSize: fontSize,
               fontWeight: FontWeight.w700,
               color: risk.text,
@@ -111,7 +111,7 @@ class RiskBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             risk.label,
-            style: GoogleFonts.nunito(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: risk.text,

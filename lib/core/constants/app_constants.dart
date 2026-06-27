@@ -25,4 +25,7 @@ class AppConstants {
 
   // Cooling-off timer
   static const int coolingOffHours = 48;
+
+  // API
+  static const String apiBaseUrl = 'http://127.0.0.1:8000';
 }

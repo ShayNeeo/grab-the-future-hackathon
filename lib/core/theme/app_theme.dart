@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 
@@ -20,38 +20,38 @@ class AppTheme {
         error: AppColors.alertRed,
         onError: AppColors.surfaceWhite,
       ),
-      textTheme: GoogleFonts.nunitoTextTheme().copyWith(
-        displayLarge: GoogleFonts.nunito(
+      textTheme: GoogleFonts.beVietnamProTextTheme().copyWith(
+        displayLarge: GoogleFonts.beVietnamPro(
           fontSize: 34,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
-        headlineLarge: GoogleFonts.nunito(
+        headlineLarge: GoogleFonts.beVietnamPro(
           fontSize: 28,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        headlineMedium: GoogleFonts.nunito(
+        headlineMedium: GoogleFonts.beVietnamPro(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        bodyLarge: GoogleFonts.nunito(
+        bodyLarge: GoogleFonts.beVietnamPro(
           fontSize: 18,
           fontWeight: FontWeight.w400,
           color: AppColors.textPrimary,
         ),
-        bodyMedium: GoogleFonts.nunito(
+        bodyMedium: GoogleFonts.beVietnamPro(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        labelLarge: GoogleFonts.nunito(
+        labelLarge: GoogleFonts.beVietnamPro(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        bodySmall: GoogleFonts.nunito(
+        bodySmall: GoogleFonts.beVietnamPro(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
@@ -62,7 +62,7 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: GoogleFonts.beVietnamPro(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -76,7 +76,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: GoogleFonts.beVietnamPro(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -90,13 +90,13 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: GoogleFonts.beVietnamPro(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceWhite,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -113,13 +113,13 @@ class AppTheme {
         indicatorColor: AppColors.shieldTealBg,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.nunito(
+            return GoogleFonts.beVietnamPro(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.shieldTeal,
             );
           }
-          return GoogleFonts.nunito(
+          return GoogleFonts.beVietnamPro(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppColors.textSecondary,

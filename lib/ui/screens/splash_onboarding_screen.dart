@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/ui/widgets/shield_logo.dart';
@@ -79,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // App name
                   Text(
                     'Lá Chắn Lừa Đảo',
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -91,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
                     padding: const EdgeInsets.only(bottom: 60),
                     child: Text(
                       'Bảo vệ bạn khỏi lừa đảo',
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 18,
                         fontWeight: FontWeight.w400,
                         color: Colors.white.withValues(alpha: 0.85),
@@ -224,7 +224,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Heading
                     Text(
                       _pages[_currentPage].heading,
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -234,7 +234,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Body
                     Text(
                       _pages[_currentPage].body,
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 18,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,

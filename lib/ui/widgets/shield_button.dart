@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 
@@ -37,7 +37,7 @@ class ShieldButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            textStyle: GoogleFonts.nunito(
+            textStyle: GoogleFonts.beVietnamPro(
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -49,7 +49,7 @@ class ShieldButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            textStyle: GoogleFonts.nunito(
+            textStyle: GoogleFonts.beVietnamPro(
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),

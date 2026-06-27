@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
-import 'package:scamshield/ui/widgets/shield_button.dart';
 
 class FamilyGuardianScreen extends StatelessWidget {
   const FamilyGuardianScreen({super.key});
@@ -32,7 +31,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Gia đình của tôi',
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -41,7 +40,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Người thân sẽ nhận cảnh báo khi bạn cần',
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: Colors.white.withValues(alpha: 0.8),
@@ -111,7 +110,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         'Thêm thành viên gia đình',
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppColors.shieldTeal,
@@ -139,7 +138,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Tự động thông báo khi phát hiện rủi ro cao',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
@@ -153,7 +152,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                           child: Switch(
                             value: true,
                             onChanged: (v) {},
-                            activeColor: AppColors.shieldTeal,
+                            activeThumbColor: AppColors.shieldTeal,
                             activeTrackColor: AppColors.shieldTeal.withValues(alpha: 0.3),
                           ),
                         ),
@@ -162,7 +161,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Khi phát hiện rủi ro cao, tất cả người giám hộ sẽ nhận thông báo ngay lập tức.',
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,
@@ -217,7 +216,7 @@ class _GuardianCard extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -232,7 +231,7 @@ class _GuardianCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -252,7 +251,7 @@ class _GuardianCard extends StatelessWidget {
                       ),
                       child: Text(
                         relationship,
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.shieldTeal,
@@ -273,7 +272,7 @@ class _GuardianCard extends StatelessWidget {
                         const SizedBox(width: 5),
                         Text(
                           status,
-                          style: GoogleFonts.nunito(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: statusColor,
