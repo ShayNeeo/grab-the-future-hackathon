@@ -6,7 +6,7 @@
         android:label="scamshield"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:networkSecurityConfig="@xml/network_security_config">
         <receiver android:name="com.shounakmulay.telephony.sms.IncomingSmsReceiver"
             android:permission="android.permission.BROADCAST_SMS"
             android:exported="true">

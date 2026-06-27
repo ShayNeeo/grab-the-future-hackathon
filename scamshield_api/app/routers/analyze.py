@@ -64,9 +64,11 @@ def _repair_json(json_str: str) -> str:
 
 
 def _build_content(text: str, image_base64: str | None) -> list[dict]:
+    # Sanitize delimiter tokens from user input to prevent injection
+    sanitized = text.replace("[USER SUBMITTED CONTENT END]", "[USER CONTENT END - SANITIZED]")
     delimited_text = (
         "[USER SUBMITTED CONTENT START]\n"
-        f"{text}\n"
+        f"{sanitized}\n"
         "[USER SUBMITTED CONTENT END]"
     )
     content: list[dict] = [{"type": "text", "text": delimited_text}]
@@ -128,7 +130,8 @@ async def _stream_model(messages: list[dict]):
                 yield content
     except Exception as e:
         logger.exception("Gemini API call failed during streaming: %s", e)
-        yield f"Error: {e}"
+        # Yield a safe JSON sentinel — never expose internal exception details
+        yield '{"__error__":true}'
 
 
 @router.post("/analyze")
@@ -146,9 +149,10 @@ async def analyze(req: AnalyzeRequest):
 async def chat(req: ChatRequest):
     messages = [{"role": "system", "content": SCAMSHIELD_SYSTEM_PROMPT}]
     messages.extend(req.history)
+    sanitized_text = req.text.replace("[USER SUBMITTED CONTENT END]", "[USER CONTENT END - SANITIZED]")
     delimited_text = (
         "[USER SUBMITTED CONTENT START]\n"
-        f"{req.text}\n"
+        f"{sanitized_text}\n"
         "[USER SUBMITTED CONTENT END]"
     )
     messages.append({"role": "user", "content": delimited_text})
