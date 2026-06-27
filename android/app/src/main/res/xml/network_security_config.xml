@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!--
-        Restrict cleartext HTTP to the specific API host only.
-        All other domains (Google Fonts, etc.) remain HTTPS-only.
-    -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">grab.w9.nu</domain>
-    </domain-config>
     <base-config cleartextTrafficPermitted="false"/>
 </network-security-config>
