@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:scamshield/ui/screens/splash_onboarding_screen.dart';
 import 'package:scamshield/ui/screens/home_dashboard_screen.dart';
 import 'package:scamshield/ui/screens/chat_screen.dart';
-import 'package:scamshield/ui/screens/scam_result_card_screen.dart';
 import 'package:scamshield/ui/screens/cooling_off_timer_screen.dart';
 import 'package:scamshield/ui/screens/contract_analysis_screen.dart';
 import 'package:scamshield/ui/screens/family_guardian_screen.dart';
@@ -26,7 +25,6 @@ class AppRoutes {
         onboarding: (_) => const OnboardingScreen(),
         home: (_) => const HomeDashboardScreen(),
         chat: (_) => const ChatScreen(),
-        scamResult: (_) => const ScamResultCardScreen(),
         coolingOff: (_) => const CoolingOffTimerScreen(),
         contractAnalysis: (_) => const ContractAnalysisScreen(),
         family: (_) => const FamilyGuardianScreen(),

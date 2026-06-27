@@ -1,11 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
+import 'package:scamshield/src/models/analysis_response.dart';
 import 'package:scamshield/ui/widgets/risk_badge.dart';
 import 'package:scamshield/ui/widgets/shield_button.dart';
 
 class ScamResultCardScreen extends StatelessWidget {
-  const ScamResultCardScreen({super.key});
+  const ScamResultCardScreen({super.key, required this.analysis});
+
+  final AnalysisResponse analysis;
 
   @override
   Widget build(BuildContext context) {
@@ -55,44 +58,46 @@ class ScamResultCardScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Risk Banner
-                    const RiskBanner(level: RiskLevel.critical),
+                    RiskBanner(level: analysis.riskLevel),
                     Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Case summary
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.shieldTealBg,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Hợp đồng kỳ nghỉ',
-                              style: GoogleFonts.beVietnamPro(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.shieldTeal,
+                          // Case type + stage header
+                          if (analysis.caseType.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.shieldTealBg,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                analysis.caseType,
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.shieldTeal,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Giai đoạn: Trước khi đặt cọc',
-                            style: GoogleFonts.beVietnamPro(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.textSecondary,
+                          if (analysis.stage.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Giai đoạn: ${analysis.stage}',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
+                          ],
                           const SizedBox(height: 24),
 
-                          // Red flags section
+                          // ── Red Flags ──
                           Text(
                             'Dấu hiệu nguy hiểm phát hiện được',
                             style: GoogleFonts.beVietnamPro(
@@ -102,69 +107,111 @@ class ScamResultCardScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          _RedFlagRow(
-                            number: 1,
-                            title: 'Yêu cầu đặt cọc trước khi xem hợp đồng',
-                            description:
-                                'Bên bán ép chuyển tiền cọc mà không cho thời gian đọc kỹ điều khoản.',
-                          ),
-                          const Divider(height: 1, color: AppColors.divider),
-                          _RedFlagRow(
-                            number: 2,
-                            title: 'Không có điều khoản hoàn tiền',
-                            description:
-                                'Hợp đồng không ghi rõ quyền được hoàn tiền nếu hủy.',
-                          ),
-                          const Divider(height: 1, color: AppColors.divider),
-                          _RedFlagRow(
-                            number: 3,
-                            title: 'Áp lực thời gian bất thường',
-                            description:
-                                'Thông báo "chỉ còn 2 suất cuối" để tạo cảm giác cấp bách.',
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Manipulation tactics
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.amberTint,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          if (analysis.redFlags.isEmpty)
+                            _NoFlagsNotice()
+                          else
+                            Column(
                               children: [
-                                Row(
+                                for (int i = 0;
+                                    i < analysis.redFlags.length;
+                                    i++) ...[
+                                  if (i > 0)
+                                    const Divider(
+                                        height: 1, color: AppColors.divider),
+                                  _RedFlagRow(
+                                    number: i + 1,
+                                    title: analysis.redFlags[i].type,
+                                    description: analysis.redFlags[i].detail,
+                                  ),
+                                ],
+                              ],
+                            ),
+
+                          // ── Manipulation Tactics ──
+                          if (analysis.manipulationTactics.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.amberTint,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.psychology_rounded,
+                                        size: 22,
+                                        color: AppColors.alertAmber,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Kỹ thuật thao túng tâm lý',
+                                        style: GoogleFonts.beVietnamPro(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: analysis.manipulationTactics
+                                        .map((t) => _TacticPill(label: t))
+                                        .toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          // ── Next Actions ──
+                          if (analysis.nextActions.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            Text(
+                              'Hành động được đề xuất',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            for (final action in analysis.nextActions)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(
-                                      Icons.psychology_rounded,
-                                      size: 22,
-                                      color: AppColors.alertAmber,
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 2),
+                                      child: Icon(
+                                        Icons.check_circle_outline_rounded,
+                                        size: 20,
+                                        color: AppColors.shieldTeal,
+                                      ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Kỹ thuật thao túng tâm lý',
-                                      style: GoogleFonts.beVietnamPro(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        action,
+                                        style: GoogleFonts.beVietnamPro(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: AppColors.textPrimary,
+                                          height: 1.4,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _TacticPill(label: 'Áp lực thời gian'),
-                                    _TacticPill(label: 'Khan hiếm giả tạo'),
-                                    _TacticPill(label: 'Bằng chứng xã hội'),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                              ),
+                          ],
                         ],
                       ),
                     ),
@@ -181,10 +228,9 @@ class ScamResultCardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               ShieldButton(
-                label: '⏱️ Bật chế độ suy nghĩ 48h',
-                onPressed: () {
-                  Navigator.pushNamed(context, '/cooling-off');
-                },
+                label:
+                    '⏱️ Bật chế độ suy nghĩ ${analysis.coolingOffHours}h',
+                onPressed: () => Navigator.pushNamed(context, '/cooling-off'),
                 isOutlined: true,
               ),
               const SizedBox(height: 12),
@@ -203,6 +249,39 @@ class ScamResultCardScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _NoFlagsNotice extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.alertGreen.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.alertGreen.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_outline_rounded,
+              color: AppColors.alertGreen, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Không phát hiện dấu hiệu lừa đảo rõ ràng',
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.alertGreen,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -257,16 +336,18 @@ class _RedFlagRow extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                    height: 1.4,
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

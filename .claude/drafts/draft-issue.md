@@ -1,98 +1,109 @@
 ---
-title: "[Task] Consolidate duplicate Flutter trees and populate the missing src/ data layer"
+title: "[Task] Wire ScamResultCardScreen to receive real AnalysisResponse via route args"
 kind: issue
 template: fallback
-labels: [task, refactor]
+labels: [task]
 ---
 
 ## Summary
 
-The repo currently contains **two parallel Flutter codebases**: the root-level `lib/` project (package `scamshield`) and `scamshield_app/lib/` (package `scamshield_app`). They duplicate screen and provider logic under different package names and carry different dependency sets (`google_fonts`/`lottie` in the root; `riverpod`/`dio`/`image_picker` in the sub-folder). Additionally, `lib/src/README.dart` describes a planned data layer (`models/`, `services/`, `repositories/`, `providers/`) that has never been created — meaning the app has no path from UI to the backend API. This task merges both trees into a single, canonical structure and fills the `src/` layer.
+`ScamResultCardScreen` currently displays hardcoded Vietnamese demo data (a holiday-contract scam with three fixed red flags) regardless of what the AI actually analyzed. The real `AnalysisResponse` is already returned from the `/analyze` endpoint and stored in `ChatMessage.response` inside `chatProvider`, but `ChatScreen._sendMessage()` never navigates away after the API call completes, so the result screen is unreachable from the chat flow at all. This task wires the three-layer gap: constructor → route → navigation trigger.
 
-## Business Goal / Why
+## Context
 
-ScamShield is a 12-hour hackathon sprint. Having two Flutter projects doubles the maintenance surface, causes import-path confusion, and makes the FastAPI integration unreachable from the real app (the root project has no `ScamShieldApi` client). Consolidating now — before the data layer is wired — avoids a hard refactor mid-sprint when screens are already connected to providers.
+The agentic backend returns a structured `AnalysisResponse` (risk level, case type, stage, red flags, manipulation tactics, next actions, cooling-off flag, suggested reply, follow-up questions). The provider stores it in `ChatMessage.response` (see `lib/src/providers/chat_provider.dart:12`). The result screen exists and is well-designed, but it reads only from its own hardcoded literals instead of that response object.
 
-## Actor
+## Affected files
 
-Developers / maintainers — no end-user-facing behaviour changes; all screens remain identical after the move.
+| File | Current problem |
+|---|---|
+| [lib/ui/screens/scam_result_card_screen.dart](lib/ui/screens/scam_result_card_screen.dart) | No constructor params; all data is hardcoded literals (lines 59, 76–78, 86–88, 107–123, 159–163) |
+| [lib/app/routes.dart](lib/app/routes.dart) | `scamResult` entry (line 29) constructs `ScamResultCardScreen()` with no args; named routes map can't pass typed objects |
+| [lib/ui/screens/chat_screen.dart](lib/ui/screens/chat_screen.dart) | `_sendMessage()` (lines 39–49) calls `ref.read(p.chatProvider.notifier).send(...)` then returns — no navigation on success |
 
-## Current State (verified against code)
+## Proposed behavior (step-by-step)
 
-| Location | What exists | Problem |
-|---|---|---|
-| `lib/` (root) | `app/`, `core/`, `ui/screens/` (8 screens), `ui/widgets/` (5 widgets) | No `src/` layer; cannot call the API |
-| `lib/src/README.dart` | Documents planned `models/`, `services/`, `repositories/`, `providers/` | Placeholder only — zero implementation files |
-| `scamshield_app/lib/` | `core/api/` (Dio client, models), `core/providers/` (Riverpod), `features/` (3 screens) | Different package name; screens duplicated; will never be shipped |
-| `scamshield_api/` | FastAPI backend — `main.py`, `app/{agents,models,routers}/` | Correct; no changes needed |
+1. **Add `AnalysisResponse` parameter to `ScamResultCardScreen`.**
+   Replace `const ScamResultCardScreen({super.key})` with:
 
-## Proposed Target Structure
+   ```dart
+   ScamResultCardScreen({super.key, required this.analysis});
+   final AnalysisResponse analysis;
+   ```
 
-```
-grab-the-future-hackathon/
-├── lib/                            ← single Flutter source of truth
-│   ├── main.dart
-│   ├── app/
-│   │   ├── app.dart
-│   │   └── routes.dart
-│   ├── core/
-│   │   ├── constants/app_constants.dart
-│   │   └── theme/
-│   │       ├── app_colors.dart
-│   │       ├── app_text_styles.dart
-│   │       └── app_theme.dart
-│   ├── ui/
-│   │   ├── screens/               ← 8 screens (unchanged)
-│   │   └── widgets/               ← 5 widgets (unchanged)
-│   └── src/
-│       ├── models/
-│       │   ├── analysis_request.dart
-│       │   └── analysis_response.dart
-│       ├── services/
-│       │   └── scamshield_api.dart
-│       ├── repositories/          ← empty, reserved for Phase 2
-│       └── providers/
-│           ├── chat_provider.dart
-│           └── cooling_off_provider.dart
-├── scamshield_api/                 ← FastAPI backend (no changes)
-├── pubspec.yaml                    ← merge deps from scamshield_app/
-└── .gitignore
-```
+   Remove the `RiskBanner(level: RiskLevel.critical)` hardcode; replace with `RiskBanner(level: analysis.riskLevel)`. Replace the hardcoded case-type chip, stage text, `_RedFlagRow` list, and `_TacticPill` list with data from `analysis`.
 
-## Implementation Steps
+2. **Switch the `/scam-result` route to `onGenerateRoute`.**
+   The simple `routes` map (`Map<String, WidgetBuilder>`) has no access to `RouteSettings.arguments`, so it cannot pass a typed object. In `app.dart` where `MaterialApp` is configured, move the `scamResult` entry out of the `routes` map and handle it in `onGenerateRoute`:
 
-1. **Merge `pubspec.yaml` dependencies** — add `flutter_riverpod`, `dio`, `image_picker`, `share_plus`, `shared_preferences` to the root `pubspec.yaml`; run `flutter pub get`.
-2. **Create `lib/src/models/`** — move `analysis_request.dart` and `analysis_response.dart` from `scamshield_app/lib/core/api/models/`; update imports to `package:scamshield/src/models/...`.
-3. **Create `lib/src/services/scamshield_api.dart`** — move the Dio client from `scamshield_app/lib/core/api/scamshield_api.dart`; update `baseUrl` reference to use `AppConstants.apiBaseUrl`.
-4. **Create `lib/src/providers/`** — move `chat_provider.dart` and `cooling_off_provider.dart` from `scamshield_app/lib/core/providers/`; fix all `package:scamshield_app/...` imports.
-5. **Delete `scamshield_app/`** — the entire directory is now superseded.
-6. **Delete `lib/src/README.dart`** — replaced by real files.
-7. **Wire providers into screens** — wrap `MaterialApp` in `ProviderScope` in `lib/main.dart`; connect `ChatScreen` and `CoolingOffTimerScreen` to the moved providers.
-8. **Run `flutter analyze`** — confirm zero errors.
+   ```dart
+   onGenerateRoute: (settings) {
+     if (settings.name == AppRoutes.scamResult) {
+       final analysis = settings.arguments as AnalysisResponse;
+       return MaterialPageRoute(
+         builder: (_) => ScamResultCardScreen(analysis: analysis),
+         settings: settings,
+       );
+     }
+     return null; // fall through to routes map
+   },
+   ```
 
-## Acceptance Criteria
+   Remove the `scamResult` entry from `AppRoutes.routes`.
 
-- [ ] Only one `pubspec.yaml` at the repo root; `scamshield_app/` directory does not exist.
-- [ ] `lib/src/models/`, `lib/src/services/`, `lib/src/providers/` all contain real implementation files (not README stubs).
-- [ ] All imports use `package:scamshield/...` — no `package:scamshield_app/...` references remain.
-- [ ] `flutter analyze` reports **No issues found**.
-- [ ] `uvicorn main:app --reload` in `scamshield_api/` still starts without errors.
-- [ ] `HomeDashboardScreen`, `ChatScreen`, and `CoolingOffTimerScreen` render without red-screen errors on a simulator.
+3. **Trigger navigation from `ChatScreen` after the API responds.**
+   In `_ChatScreenState.build()`, add a `ref.listen` that fires when the provider transitions from loading → data:
 
-## Out of Scope
+   ```dart
+   ref.listen<AsyncValue<List<p.ChatMessage>>>(p.chatProvider, (prev, next) {
+     if (prev?.isLoading == true && next.hasValue) {
+       final msgs = next.value!;
+       final last = msgs.isNotEmpty ? msgs.last : null;
+       if (last != null && last.response != null) {
+         Navigator.pushNamed(
+           context,
+           AppRoutes.scamResult,
+           arguments: last.response,
+         );
+       }
+     }
+   });
+   ```
 
-- Changing any screen UI or business logic.
-- Adding new screens (`FamilyGuardianScreen`, `ContractAnalysisScreen` remain as stub placeholders).
-- Backend (`scamshield_api/`) changes.
-- Adding tests.
+4. **Replace all hardcoded data in `ScamResultCardScreen` with real fields.**
+
+   | Hardcoded value | Replace with |
+   | --- | --- |
+   | `RiskLevel.critical` (line 59) | `analysis.riskLevel` |
+   | `'Hợp đồng kỳ nghỉ'` (line 76) | `analysis.caseType` |
+   | `'Trước khi đặt cọc'` (line 87) | `analysis.stage` |
+   | Three hardcoded `_RedFlagRow(...)` widgets | `analysis.redFlags.asMap().entries.map(...)` |
+   | Three hardcoded `_TacticPill(...)` widgets | `analysis.manipulationTactics.map((t) => _TacticPill(label: t))` |
+
+## Acceptance criteria
+
+- [ ] Sending a message in `ChatScreen` and receiving an AI response automatically pushes `ScamResultCardScreen` onto the navigation stack.
+- [ ] `ScamResultCardScreen` displays the actual `riskLevel`, `caseType`, `stage`, `redFlags`, and `manipulationTactics` from the API response — not hardcoded strings.
+- [ ] Navigating to `/cooling-off` from the result screen still works (the `ShieldButton` at line 187 uses `Navigator.pushNamed(context, '/cooling-off')` — no change needed there).
+- [ ] `flutter analyze` reports no new errors or warnings.
+- [ ] If `analysis.redFlags` is empty, the red-flags section renders gracefully (empty state text or hidden section).
+
+## Out of scope
+
+- Showing `follow_up_questions` in the chat UI (separate task — agentic loop).
+- Wiring `ContractAnalysisScreen` to `/contract` endpoint (separate task).
+- Persisting analysis history across sessions.
 
 ## Dependencies / Blockers
 
-- None known. All source files already exist in either `lib/` or `scamshield_app/lib/`.
+- `AnalysisResponse` model is complete: `lib/src/models/analysis_response.dart` already has all required fields with `fromJson` deserialization.
+- `RiskBanner` widget already accepts a `RiskLevel` parameter — no widget changes needed.
+- Backend `/analyze` endpoint must be running (`uvicorn app.main:app --reload` in `scamshield_api/`).
 
 ## References
 
-- [`lib/src/README.dart`](lib/src/README.dart) — original data-layer spec
-- [`scamshield_app/lib/core/api/scamshield_api.dart`](scamshield_app/lib/core/api/scamshield_api.dart) — Dio client to migrate
-- [`scamshield_app/lib/core/providers/chat_provider.dart`](scamshield_app/lib/core/providers/chat_provider.dart) — provider to migrate
-- [`scamshield_api/app/routers/analyze.py`](scamshield_api/app/routers/analyze.py) — backend contract (unchanged)
+- [lib/ui/screens/scam_result_card_screen.dart](lib/ui/screens/scam_result_card_screen.dart) — target screen (hardcoded data)
+- [lib/app/routes.dart](lib/app/routes.dart) — named routes map
+- [lib/ui/screens/chat_screen.dart](lib/ui/screens/chat_screen.dart) — navigation trigger point
+- [lib/src/models/analysis_response.dart](lib/src/models/analysis_response.dart) — data model to pass
+- [lib/src/providers/chat_provider.dart](lib/src/providers/chat_provider.dart) — where `AnalysisResponse` is stored after API call
