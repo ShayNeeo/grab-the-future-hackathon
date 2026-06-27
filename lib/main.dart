@@ -5,6 +5,13 @@ import 'package:justful/src/services/sms_detection_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SmsDetectionService.instance.init();
+
+  // Fire-and-forget: don't block app startup on SMS service init.
+  // The SMS service can initialize in the background; the app UI
+  // should always render regardless of permission/plugin status.
+  SmsDetectionService.instance.init().catchError((e) {
+    debugPrint('[Main] SmsDetectionService.init() failed: $e');
+  });
+
   runApp(const ProviderScope(child: JustfulApp()));
 }
