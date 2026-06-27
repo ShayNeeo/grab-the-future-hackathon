@@ -1,0 +1,35 @@
+import 'package:flutter/material.dart';
+import 'package:scamshield/ui/screens/splash_onboarding_screen.dart';
+import 'package:scamshield/ui/screens/home_dashboard_screen.dart';
+import 'package:scamshield/ui/screens/chat_screen.dart';
+import 'package:scamshield/ui/screens/scam_result_card_screen.dart';
+import 'package:scamshield/ui/screens/cooling_off_timer_screen.dart';
+import 'package:scamshield/ui/screens/contract_analysis_screen.dart';
+import 'package:scamshield/ui/screens/family_guardian_screen.dart';
+import 'package:scamshield/ui/screens/settings_screen.dart';
+
+class AppRoutes {
+  AppRoutes._();
+
+  static const String splash = '/';
+  static const String onboarding = '/onboarding';
+  static const String home = '/home';
+  static const String chat = '/chat';
+  static const String scamResult = '/scam-result';
+  static const String coolingOff = '/cooling-off';
+  static const String contractAnalysis = '/contract-analysis';
+  static const String family = '/family';
+  static const String settings = '/settings';
+
+  static Map<String, WidgetBuilder> get routes => {
+        splash: (_) => const SplashScreen(),
+        onboarding: (_) => const OnboardingScreen(),
+        home: (_) => const HomeDashboardScreen(),
+        chat: (_) => const ChatScreen(),
+        scamResult: (_) => const ScamResultCardScreen(),
+        coolingOff: (_) => const CoolingOffTimerScreen(),
+        contractAnalysis: (_) => const ContractAnalysisScreen(),
+        family: (_) => const FamilyGuardianScreen(),
+        settings: (_) => const SettingsScreen(),
+      };
+}
