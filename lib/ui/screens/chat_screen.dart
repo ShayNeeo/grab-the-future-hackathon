@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:justful/app/routes.dart';
 import 'package:justful/core/theme/app_colors.dart';
 import 'package:justful/src/providers/chat_provider.dart' as p;
@@ -27,6 +28,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _speechAvailable = false;
   bool _isListening = false;
+  bool _speechInitAttempted = false;
+  bool _speechBusy = false;
   String _transcribedWords = '';
   bool _useVoiceMode = true;
 
@@ -37,6 +40,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     time: '',
   );
 
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissionAndInitSpeech();
+  }
+
+  Future<void> _checkPermissionAndInitSpeech() async {
+    final status = await Permission.microphone.status;
+    if (status.isGranted) {
+      await _initSpeech();
+    }
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final xFile = await _picker.pickImage(
         source: source, imageQuality: 70, maxWidth: 1024);
@@ -46,19 +62,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _initSpeech() async {
-    if (_speechAvailable) return;
+    if (_speechInitAttempted) return;
+    _speechInitAttempted = true;
     try {
+      // Always cancel first to clean up any stale platform session
+      try {
+        await _speech.cancel();
+      } catch (_) {}
+      
       final available = await _speech.initialize(
         onError: (val) {
           debugPrint('Speech error: $val');
           if (!mounted) return;
-          setState(() => _isListening = false);
+          setState(() {
+            _isListening = false;
+            _speechBusy = false;
+            // If permanent error, mark speech as unavailable
+            if (val.permanent) {
+              _speechAvailable = false;
+            }
+          });
         },
         onStatus: (val) {
           debugPrint('Speech status: $val');
           if (val == 'done' || val == 'notListening') {
             if (!mounted) return;
-            setState(() => _isListening = false);
+            setState(() {
+              _isListening = false;
+              _speechBusy = false;
+            });
           }
         },
       );
@@ -68,48 +100,140 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
     } catch (e) {
       debugPrint('Speech initialization failed: $e');
+      if (!mounted) return;
+      setState(() {
+        _speechAvailable = false;
+      });
     }
   }
 
+  void _toggleListening() {
+    if (_speechBusy) return;
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
+  }
+
+  void _showPermissionPermanentlyDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Quyền truy cập Micro'),
+          content: const Text(
+            'Quyền truy cập micro đã bị từ chối. Vui lòng mở cài đặt ứng dụng để bật quyền truy cập micro cho Justful.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Mở Cài Đặt'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _startListening() async {
-    await _initSpeech();
-    if (!mounted) return;
-    if (_speechAvailable) {
+    if (_speechBusy) return;
+    _speechBusy = true;
+
+    // Check and request permission using permission_handler first
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      status = await Permission.microphone.request();
+      if (!mounted) return;
+    }
+
+    if (!status.isGranted) {
+      _speechBusy = false;
+      if (!mounted) return;
+      if (status.isPermanentlyDenied) {
+        _showPermissionPermanentlyDeniedDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vui lòng cấp quyền truy cập micro để sử dụng giọng nói.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!_speechAvailable) {
+      // Tear down old session completely before re-init
+      try { await _speech.cancel(); } catch (_) {}
+      _speechInitAttempted = false;
+      await _initSpeech();
+      if (!mounted) return;
+    }
+    if (!_speechAvailable) {
+      _speechBusy = false;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro trong cài đặt.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+    
+    try {
+      await _speech.listen(
+        onResult: (val) {
+          if (!mounted) return;
+          setState(() {
+            _transcribedWords = val.recognizedWords;
+          });
+        },
+        listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
+      );
+      // Only set listening AFTER _speech.listen() succeeds
+      if (!mounted) return;
       setState(() {
         _isListening = true;
         _transcribedWords = '';
       });
-      
-      try {
-        await _speech.listen(
-          onResult: (val) {
-            if (!mounted) return;
-            setState(() {
-              _transcribedWords = val.recognizedWords;
-            });
-          },
-          listenOptions: stt.SpeechListenOptions(localeId: 'vi_VN'),
-        );
-      } catch (e) {
-        debugPrint('Speech listen error: $e');
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+    } catch (e) {
+      debugPrint('Speech listen error: $e');
+      if (!mounted) return;
+      setState(() => _isListening = false);
+    } finally {
+      _speechBusy = false;
     }
   }
 
   void _stopListening() async {
+    if (_speechBusy && !_isListening) return;
+    _speechBusy = true;
     try {
-      await _speech.stop();
+      if (_speech.isListening) {
+        await _speech.stop();
+      }
     } catch (e) {
       debugPrint('Speech stop error: $e');
     }
-    setState(() => _isListening = false);
+    if (mounted) {
+      setState(() {
+        _isListening = false;
+        _speechBusy = false;
+      });
+    } else {
+      _speechBusy = false;
+    }
   }
 
 
@@ -140,7 +264,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    _speech.cancel();
+    _speech.cancel().catchError((_) {});
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -710,6 +834,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: InkWell(
                 onTap: () {
                   if (!_useVoiceMode) {
+                    _stopListening();
                     setState(() {
                       _useVoiceMode = true;
                     });
@@ -753,6 +878,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: InkWell(
                 onTap: () {
                   if (_useVoiceMode) {
+                    _stopListening();
                     setState(() {
                       _useVoiceMode = false;
                     });
@@ -842,13 +968,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    if (_isListening) {
-                      _stopListening();
-                    } else {
-                      _startListening();
-                    }
-                  },
+                  onTap: _toggleListening,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 160,
@@ -977,6 +1097,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ? null
                         : () {
                             final speechText = _transcribedWords;
+                            _stopListening();
                             setState(() {
                               _transcribedWords = '';
                               _useVoiceMode = false;
