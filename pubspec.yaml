@@ -1,6 +1,6 @@
-name: scamshield
-description: ScamShield - Lá Chắn Lừa Đảo - AI-powered scam detection for elderly users
-publish_to: "none"
+name: justful
+description: Justful - AI-powered scam detection for elderly users
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:

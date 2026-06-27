@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:scamshield/app/routes.dart';
-import 'package:scamshield/core/theme/app_theme.dart';
-import 'package:scamshield/src/models/analysis_response.dart';
-import 'package:scamshield/ui/screens/scam_result_card_screen.dart';
+import 'package:justful/app/routes.dart';
+import 'package:justful/core/theme/app_theme.dart';
+import 'package:justful/src/models/analysis_response.dart';
+import 'package:justful/ui/screens/scam_result_card_screen.dart';
 
-class ScamShieldApp extends StatelessWidget {
-  const ScamShieldApp({super.key});
+class JustfulApp extends StatelessWidget {
+  const JustfulApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ScamShield - Lá Chắn Lừa Đảo',
+      title: 'Justful',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.splash,

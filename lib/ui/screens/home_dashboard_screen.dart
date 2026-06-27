@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:scamshield/core/theme/app_colors.dart';
-import 'package:scamshield/src/models/sms_alert.dart';
-import 'package:scamshield/src/services/sms_detection_service.dart';
-import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
-import 'package:scamshield/ui/widgets/stat_card.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/src/models/sms_alert.dart';
+import 'package:justful/src/services/sms_detection_service.dart';
+import 'package:justful/ui/widgets/bottom_nav_shell.dart';
+import 'package:justful/ui/widgets/stat_card.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -471,19 +471,25 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _ActionChip(
-                              icon: Icons.camera_alt_rounded,
-                              label: 'Ảnh',
+                            Expanded(
+                              child: _ActionChip(
+                                icon: Icons.camera_alt_rounded,
+                                label: 'Ảnh',
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            _ActionChip(
-                              icon: Icons.mic_rounded,
-                              label: 'Ghi âm',
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _ActionChip(
+                                icon: Icons.mic_rounded,
+                                label: 'Ghi âm',
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            _ActionChip(
-                              icon: Icons.text_fields_rounded,
-                              label: 'Văn bản',
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _ActionChip(
+                                icon: Icons.text_fields_rounded,
+                                label: 'Văn bản',
+                              ),
                             ),
                           ],
                         ),
@@ -684,22 +690,26 @@ class _ActionChip extends StatelessWidget {
       label: label,
       button: true,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 22, color: Colors.white),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+            Icon(icon, size: 20, color: Colors.white),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
