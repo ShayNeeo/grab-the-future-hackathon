@@ -6,6 +6,7 @@ import 'package:justful/ui/screens/cooling_off_timer_screen.dart';
 import 'package:justful/ui/screens/contract_analysis_screen.dart';
 import 'package:justful/ui/screens/family_guardian_screen.dart';
 import 'package:justful/ui/screens/settings_screen.dart';
+import 'package:justful/ui/screens/live_monitor_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -19,6 +20,7 @@ class AppRoutes {
   static const String contractAnalysis = '/contract-analysis';
   static const String family = '/family';
   static const String settings = '/settings';
+  static const String liveMonitor = '/live-monitor';
 
   static Map<String, WidgetBuilder> get routes => {
         splash: (_) => const SplashScreen(),
@@ -29,5 +31,6 @@ class AppRoutes {
         contractAnalysis: (_) => const ContractAnalysisScreen(),
         family: (_) => const FamilyGuardianScreen(),
         settings: (_) => const SettingsScreen(),
+        liveMonitor: (_) => const LiveMonitorScreen(),
       };
 }
