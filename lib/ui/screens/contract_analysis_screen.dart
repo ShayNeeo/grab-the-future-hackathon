@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:scamshield/core/theme/app_colors.dart';
-import 'package:scamshield/ui/widgets/shield_button.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/ui/widgets/shield_button.dart';
 
 class ContractAnalysisScreen extends StatelessWidget {
   const ContractAnalysisScreen({super.key});

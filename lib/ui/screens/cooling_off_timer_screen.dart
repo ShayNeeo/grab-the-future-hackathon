@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:scamshield/core/theme/app_colors.dart';
-import 'package:scamshield/src/providers/cooling_off_provider.dart';
-import 'package:scamshield/ui/widgets/shield_button.dart';
+import 'package:justful/core/theme/app_colors.dart';
+import 'package:justful/src/providers/cooling_off_provider.dart';
+import 'package:justful/ui/widgets/shield_button.dart';
 
 class CoolingOffTimerScreen extends ConsumerStatefulWidget {
   const CoolingOffTimerScreen({super.key});
@@ -206,8 +206,8 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                   ShieldButton(
                     label: 'Chia sẻ cảnh báo này',
                     onPressed: () => Share.share(
-                      'ScamShield cảnh báo: Tôi đang trong giai đoạn suy nghĩ 48 giờ và sẽ không ký hoặc chuyển tiền. Hãy liên hệ nếu bạn muốn biết thêm.',
-                      subject: 'ScamShield — Cảnh báo lừa đảo',
+                      'Justful cảnh báo: Tôi đang trong giai đoạn suy nghĩ 48 giờ và sẽ không ký hoặc chuyển tiền. Hãy liên hệ nếu bạn muốn biết thêm.',
+                      subject: 'Justful — Cảnh báo lừa đảo',
                     ),
                     isOutlined: true,
                   ),

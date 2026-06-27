@@ -1,8 +1,8 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'ScamShield';
-  static const String appNameVi = 'Lá Chắn Lừa Đảo';
+  static const String appName = 'Justful';
+  static const String appNameVi = 'Justful';
   static const String tagline = 'Bảo vệ bạn khỏi lừa đảo';
 
   // Elderly-safe minimums
@@ -29,6 +29,6 @@ class AppConstants {
   // API
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8000',
+    defaultValue: 'http://grab.w9.nu:8085',
   );
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:scamshield/ui/screens/splash_onboarding_screen.dart';
-import 'package:scamshield/ui/screens/home_dashboard_screen.dart';
-import 'package:scamshield/ui/screens/chat_screen.dart';
-import 'package:scamshield/ui/screens/cooling_off_timer_screen.dart';
-import 'package:scamshield/ui/screens/contract_analysis_screen.dart';
-import 'package:scamshield/ui/screens/family_guardian_screen.dart';
-import 'package:scamshield/ui/screens/settings_screen.dart';
+import 'package:justful/ui/screens/splash_onboarding_screen.dart';
+import 'package:justful/ui/screens/home_dashboard_screen.dart';
+import 'package:justful/ui/screens/chat_screen.dart';
+import 'package:justful/ui/screens/cooling_off_timer_screen.dart';
+import 'package:justful/ui/screens/contract_analysis_screen.dart';
+import 'package:justful/ui/screens/family_guardian_screen.dart';
+import 'package:justful/ui/screens/settings_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
