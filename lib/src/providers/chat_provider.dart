@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:justful/src/models/analysis_request.dart';
-import 'package:justful/src/models/analysis_response.dart';
-import 'package:justful/src/services/scamshield_api.dart';
+import 'package:justifty/src/models/analysis_request.dart';
+import 'package:justifty/src/models/analysis_response.dart';
+import 'package:justifty/src/services/scamshield_api.dart';
 
-final apiProvider = Provider<JustfulApi>((ref) => JustfulApi());
+final apiProvider = Provider<JustiftyApi>((ref) => JustiftyApi());
 
 class ChatMessage {
   final String role; // 'user' | 'assistant'
@@ -22,7 +22,7 @@ class ChatMessage {
 class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
   ChatNotifier(this._api) : super(const AsyncValue.data([]));
 
-  final JustfulApi _api;
+  final JustiftyApi _api;
 
   List<Map<String, dynamic>> get _history {
     final messages = state.valueOrNull ?? [];

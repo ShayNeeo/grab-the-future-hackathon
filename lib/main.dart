@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:justful/app/app.dart';
+import 'package:justifty/app/app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: JustfulApp()));
+  runApp(const ProviderScope(child: JustiftyApp()));
 }

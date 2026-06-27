@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:justful/core/theme/app_colors.dart';
-import 'package:justful/src/models/analysis_response.dart';
-import 'package:justful/ui/widgets/risk_badge.dart';
-import 'package:justful/ui/widgets/shield_button.dart';
+import 'package:justifty/core/theme/app_colors.dart';
+import 'package:justifty/src/models/analysis_response.dart';
+import 'package:justifty/ui/widgets/risk_badge.dart';
+import 'package:justifty/ui/widgets/shield_button.dart';
 
 class ScamResultCardScreen extends StatelessWidget {
   const ScamResultCardScreen({super.key, required this.analysis});

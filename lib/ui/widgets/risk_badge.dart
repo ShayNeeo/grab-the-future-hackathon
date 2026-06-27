@@ -1,9 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:justful/core/theme/app_colors.dart';
-import 'package:justful/src/models/analysis_response.dart';
+import 'package:justifty/core/theme/app_colors.dart';
+import 'package:justifty/src/models/analysis_response.dart';
 
-export 'package:justful/src/models/analysis_response.dart' show RiskLevel;
+export 'package:justifty/src/models/analysis_response.dart' show RiskLevel;
 
 class RiskColors {
   final Color background;

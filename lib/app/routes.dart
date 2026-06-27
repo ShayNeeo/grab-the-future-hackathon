@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:justful/ui/screens/splash_onboarding_screen.dart';
-import 'package:justful/ui/screens/home_dashboard_screen.dart';
-import 'package:justful/ui/screens/chat_screen.dart';
-import 'package:justful/ui/screens/cooling_off_timer_screen.dart';
-import 'package:justful/ui/screens/contract_analysis_screen.dart';
-import 'package:justful/ui/screens/family_guardian_screen.dart';
-import 'package:justful/ui/screens/settings_screen.dart';
+import 'package:justifty/ui/screens/splash_onboarding_screen.dart';
+import 'package:justifty/ui/screens/home_dashboard_screen.dart';
+import 'package:justifty/ui/screens/chat_screen.dart';
+import 'package:justifty/ui/screens/cooling_off_timer_screen.dart';
+import 'package:justifty/ui/screens/contract_analysis_screen.dart';
+import 'package:justifty/ui/screens/family_guardian_screen.dart';
+import 'package:justifty/ui/screens/settings_screen.dart';
 
 class AppRoutes {
   AppRoutes._();

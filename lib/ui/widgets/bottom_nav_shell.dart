@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:justful/core/theme/app_colors.dart';
+import 'package:justifty/core/theme/app_colors.dart';
 
 class BottomNavShell extends StatefulWidget {
   final int currentIndex;

@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:justful/app/routes.dart';
-import 'package:justful/core/theme/app_colors.dart';
-import 'package:justful/src/providers/chat_provider.dart' as p;
-import 'package:justful/ui/widgets/bottom_nav_shell.dart';
+import 'package:justifty/app/routes.dart';
+import 'package:justifty/core/theme/app_colors.dart';
+import 'package:justifty/src/providers/chat_provider.dart' as p;
+import 'package:justifty/ui/widgets/bottom_nav_shell.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -21,6 +21,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
   String? _pendingImageBase64;
+  String? _initialAction;
 
   static const _greeting = _ChatMessage(
     isAi: true,
@@ -28,6 +29,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         'Xin chào Bà Lan! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
     time: '',
   );
+
+  @override
+  void initState() {
+    super.initState();
+    // Handle action from home screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final action = ModalRoute.of(context)?.settings.arguments as String?;
+      if (action != null) {
+        setState(() => _initialAction = action);
+        _handleInitialAction(action);
+      }
+    });
+  }
+
+  void _handleInitialAction(String action) {
+    switch (action) {
+      case 'camera':
+        _pickImage(ImageSource.camera);
+        break;
+      case 'voice':
+        // Focus on text input for now (voice not implemented)
+        _messageController.text = '';
+        break;
+      case 'text':
+        // Focus on text input
+        FocusScope.of(context).requestFocus(FocusNode());
+        break;
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final xFile = await _picker.pickImage(
@@ -160,7 +190,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Justful AI',
+                  Text('Justifty AI',
                       style: GoogleFonts.beVietnamPro(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,

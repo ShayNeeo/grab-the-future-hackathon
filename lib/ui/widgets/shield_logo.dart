@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:justful/core/theme/app_colors.dart';
+import 'package:justifty/core/theme/app_colors.dart';
 
-class JustfulLogo extends StatelessWidget {
+class JustiftyLogo extends StatelessWidget {
   final double size;
 
-  const JustfulLogo({
+  const JustiftyLogo({
     super.key,
     this.size = 120,
   });
@@ -35,7 +35,7 @@ class ShieldLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JustfulLogo(size: size);
+    return JustiftyLogo(size: size);
   }
 }
 

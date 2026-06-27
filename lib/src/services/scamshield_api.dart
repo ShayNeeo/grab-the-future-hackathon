@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:justful/core/constants/app_constants.dart';
-import 'package:justful/src/models/analysis_request.dart';
-import 'package:justful/src/models/analysis_response.dart';
+import 'package:justifty/core/constants/app_constants.dart';
+import 'package:justifty/src/models/analysis_request.dart';
+import 'package:justifty/src/models/analysis_response.dart';
 
-class JustfulApi {
+class JustiftyApi {
   final Dio _dio = Dio(BaseOptions(
     baseUrl: AppConstants.apiBaseUrl,
     connectTimeout: const Duration(seconds: 30),
