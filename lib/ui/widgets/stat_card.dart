@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:justful/core/theme/app_colors.dart';
 
@@ -34,15 +34,18 @@ class StatCard extends StatelessWidget {
           children: [
             Icon(icon, size: 24, color: accentColor ?? AppColors.shieldTeal),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: GoogleFonts.beVietnamPro(
-                fontSize: value.length > 3 ? 20 : 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: value.length > 3 ? 20 : 28,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+                maxLines: 1,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(

@@ -500,29 +500,31 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ── Risk Summary Row ──
-              Row(
-                children: [
-                  StatCard(
-                    icon: Icons.history_rounded,
-                    value: '5',
-                    label: 'lần kiểm tra',
-                  ),
-                  const SizedBox(width: 12),
-                  StatCard(
-                    icon: Icons.warning_amber_rounded,
-                    value: '2',
-                    label: 'rủi ro phát hiện',
-                    accentColor: AppColors.alertAmber,
-                  ),
-                  const SizedBox(width: 12),
-                  StatCard(
-                    icon: Icons.family_restroom_rounded,
-                    value: 'An toàn',
-                    label: 'Gia đình',
-                    accentColor: AppColors.alertGreen,
-                  ),
-                ],
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    StatCard(
+                      icon: Icons.history_rounded,
+                      value: '5',
+                      label: 'lần kiểm tra',
+                    ),
+                    const SizedBox(width: 12),
+                    StatCard(
+                      icon: Icons.warning_amber_rounded,
+                      value: '2',
+                      label: 'rủi ro phát hiện',
+                      accentColor: AppColors.alertAmber,
+                    ),
+                    const SizedBox(width: 12),
+                    StatCard(
+                      icon: Icons.family_restroom_rounded,
+                      value: 'An toàn',
+                      label: 'Gia đình',
+                      accentColor: AppColors.alertGreen,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 28),
 

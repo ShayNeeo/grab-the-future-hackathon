@@ -9,6 +9,7 @@ import 'package:justful/core/theme/app_colors.dart';
 import 'package:justful/src/providers/chat_provider.dart' as p;
 import 'package:justful/src/models/analysis_response.dart';
 import 'package:justful/ui/widgets/bottom_nav_shell.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -22,6 +23,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
   String? _pendingImageBase64;
+  
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _speechAvailable = false;
+  bool _isListening = false;
+  String _transcribedWords = '';
 
   static const _greeting = _ChatMessage(
     isAi: true,
@@ -36,6 +42,249 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (xFile == null) return;
     final bytes = await File(xFile.path).readAsBytes();
     setState(() => _pendingImageBase64 = base64Encode(bytes));
+  }
+
+  Future<void> _initSpeech() async {
+    if (_speechAvailable) return;
+    try {
+      final available = await _speech.initialize(
+        onError: (val) {
+          debugPrint('Speech error: $val');
+          setState(() => _isListening = false);
+        },
+        onStatus: (val) {
+          debugPrint('Speech status: $val');
+          if (val == 'done' || val == 'notListening') {
+            setState(() => _isListening = false);
+          }
+        },
+      );
+      setState(() {
+        _speechAvailable = available;
+      });
+    } catch (e) {
+      debugPrint('Speech initialization failed: $e');
+    }
+  }
+
+  void _startListening(StateSetter dialogState) async {
+    await _initSpeech();
+    if (!mounted) return;
+    if (_speechAvailable) {
+      setState(() {
+        _isListening = true;
+        _transcribedWords = '';
+      });
+      dialogState(() {});
+      
+      try {
+        await _speech.listen(
+          onResult: (val) {
+            setState(() {
+              _transcribedWords = val.recognizedWords;
+            });
+            dialogState(() {});
+          },
+          localeId: 'vi_VN',
+        );
+      } catch (e) {
+        debugPrint('Speech listen error: $e');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể kích hoạt chức năng giọng nói. Vui lòng cấp quyền micro.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  void _stopListening() async {
+    try {
+      await _speech.stop();
+    } catch (e) {
+      debugPrint('Speech stop error: $e');
+    }
+    setState(() => _isListening = false);
+  }
+
+  void _showSpeechBottomSheet() {
+    _transcribedWords = '';
+    _isListening = false;
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final bool localIsListening = _isListening;
+            final String localText = _transcribedWords;
+            
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceWhite,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Text(
+                      localIsListening ? 'Đang lắng nghe...' : 'Nhấn nút để nói',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Vui lòng nói rõ nội dung cần kiểm tra lừa đảo',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    GestureDetector(
+                      onTap: () {
+                        if (_isListening) {
+                          _stopListening();
+                          setModalState(() {});
+                        } else {
+                          _startListening(setModalState);
+                        }
+                      },
+                      child: _buildSpeechMicButton(localIsListening),
+                    ),
+                    const SizedBox(height: 32),
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(
+                        minHeight: 100,
+                        maxHeight: 180,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: localIsListening 
+                              ? AppColors.shieldTeal.withValues(alpha: 0.3) 
+                              : Colors.transparent,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          localText.isEmpty 
+                              ? (localIsListening ? 'Hãy nói gì đó...' : 'Chưa có giọng nói được nhận diện...')
+                              : localText,
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 16,
+                            color: localText.isEmpty ? AppColors.textSecondary : AppColors.textPrimary,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () {
+                              _stopListening();
+                              Navigator.pop(context);
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
+                            ),
+                            child: Text(
+                              'Hủy',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: localText.trim().isEmpty 
+                                ? null 
+                                : () {
+                                    _stopListening();
+                                    _messageController.text = localText;
+                                    Navigator.pop(context);
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.shieldTeal,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
+                              disabledBackgroundColor: AppColors.shieldTeal.withValues(alpha: 0.3),
+                            ),
+                            child: Text(
+                              'Hoàn tất',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      if (_isListening) {
+        _stopListening();
+      }
+    });
+  }
+
+  Widget _buildSpeechMicButton(bool isListening) {
+    if (!isListening) {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: const BoxDecoration(
+          color: AppColors.shieldTeal,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.mic_rounded,
+          color: Colors.white,
+          size: 38,
+        ),
+      );
+    }
+    return const _SpeechPulseAnimation();
   }
 
   void _sendMessage([String? overrideText]) {
@@ -767,7 +1016,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   width: 56,
                   height: 56,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: _showSpeechBottomSheet,
                     icon: const Icon(Icons.mic_rounded,
                         color: AppColors.shieldTeal, size: 26),
                     tooltip: 'Ghi âm',
@@ -910,6 +1159,72 @@ class _SuggestionChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SpeechPulseAnimation extends StatefulWidget {
+  const _SpeechPulseAnimation();
+
+  @override
+  State<_SpeechPulseAnimation> createState() => _SpeechPulseAnimationState();
+}
+
+class _SpeechPulseAnimationState extends State<_SpeechPulseAnimation>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            ...List.generate(3, (index) {
+              final scale = 1.0 + (index + 1) * 0.3 * _controller.value;
+              final opacity = 0.6 - (index + 1) * 0.15 - (0.3 * _controller.value);
+              return Container(
+                width: 80 * scale,
+                height: 80 * scale,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.shieldTeal.withValues(alpha: opacity.clamp(0.0, 1.0)),
+                ),
+              );
+            }),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: AppColors.shieldTeal,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.mic_rounded,
+                color: Colors.white,
+                size: 38,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
