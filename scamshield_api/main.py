@@ -1,6 +1,9 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.analyze import router
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="ScamShield API", version="1.0.0")
 

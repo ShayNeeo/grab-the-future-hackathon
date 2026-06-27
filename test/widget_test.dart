@@ -7,5 +7,6 @@ void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: ScamShieldApp()));
     expect(find.byType(MaterialApp), findsOneWidget);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
   });
 }
