@@ -1,8 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
+import 'package:scamshield/src/models/analysis_response.dart';
 
-enum RiskLevel { critical, high, medium, safe }
+export 'package:scamshield/src/models/analysis_response.dart' show RiskLevel;
 
 class RiskColors {
   final Color background;
@@ -40,7 +41,7 @@ class RiskColors {
           label: 'RỦI RO TRUNG BÌNH',
           icon: Icons.info_outline,
         );
-      case RiskLevel.safe:
+      case RiskLevel.low:
         return const RiskColors(
           background: AppColors.alertGreen,
           text: Colors.white,

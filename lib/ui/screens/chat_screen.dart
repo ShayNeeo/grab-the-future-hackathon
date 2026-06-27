@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:scamshield/app/routes.dart';
 import 'package:scamshield/core/theme/app_colors.dart';
 import 'package:scamshield/src/providers/chat_provider.dart' as p;
 import 'package:scamshield/ui/widgets/bottom_nav_shell.dart';
@@ -108,6 +109,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(p.chatProvider);
+
+    ref.listen<AsyncValue<List<p.ChatMessage>>>(p.chatProvider, (prev, next) {
+      if (prev?.isLoading == true && next.hasValue) {
+        final msgs = next.value!;
+        if (msgs.isNotEmpty && msgs.last.response != null) {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.scamResult,
+            arguments: msgs.last.response,
+          );
+        }
+      }
+    });
+
     final messages = _buildDisplayMessages(chatState);
 
     return BottomNavShell(
