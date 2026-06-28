@@ -182,40 +182,18 @@ class SmsDetectionService {
     ));
 
     try {
-      _log('POST /analyze...');
-      final response = await dio.post<ResponseBody>(
-        '/analyze',
-        data: {'text': body, 'history': []},
-        options: Options(responseType: ResponseType.stream),
+      _log('POST /detect-scam...');
+      final response = await dio.post<Map<String, dynamic>>(
+        '/detect-scam',
+        data: {'sender': sender, 'body': body},
       );
-      _log('POST /analyze status: ${response.statusCode}');
+      _log('POST /detect-scam status: ${response.statusCode}');
 
-      final responseData = response.data;
-      if (responseData == null) {
+      final data = response.data;
+      if (data == null) {
         _log('response.data is null — aborting');
         return;
       }
-
-      String accumulated = '';
-      await for (final chunk in responseData.stream) {
-        accumulated += utf8.decode(chunk);
-      }
-      debugPrint('$_tag stream complete — accumulated ${accumulated.length} chars');
-
-      String jsonText = accumulated;
-      if (accumulated.contains('</thought>')) {
-        jsonText = accumulated.split('</thought>').last.trim();
-        debugPrint('$_tag stripped <thought> block');
-      }
-      final start = jsonText.indexOf('{');
-      final end = jsonText.lastIndexOf('}');
-      if (start != -1 && end != -1 && end >= start) {
-        jsonText = jsonText.substring(start, end + 1);
-      }
-      debugPrint('$_tag JSON to parse: ${jsonText.length > 200 ? jsonText.substring(0, 200) : jsonText}');
-
-      final repairedJson = _repairJson(jsonText);
-      final Map<String, dynamic> data = json.decode(repairedJson) as Map<String, dynamic>;
 
       final String riskLevel = data['risk_level'] as String? ?? 'low';
       final String explanation = data['explanation'] as String? ?? '';
