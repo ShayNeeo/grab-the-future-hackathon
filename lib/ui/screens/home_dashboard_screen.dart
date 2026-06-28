@@ -14,7 +14,7 @@ class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
 
   // Change this to true to enable the SMS Web Simulator UI
-  static const bool showSmsSimulator = true;
+  static const bool showSmsSimulator = false;
 
   @override
   ConsumerState<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
@@ -26,11 +26,18 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
   final TextEditingController _senderController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
   bool _isSimulating = false;
+  List<String> _debugLog = [];
 
   @override
   void initState() {
     super.initState();
     _loadAlerts();
+    _loadDebugLog();
+  }
+
+  Future<void> _loadDebugLog() async {
+    final log = await SmsDebugLog.read();
+    if (mounted) setState(() => _debugLog = log);
   }
 
   @override
@@ -395,6 +402,138 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                                   ),
                                 ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // ── SMS Debug Log Card ──
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E1E),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.bug_report, color: Color(0xFF4FFFB0), size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Nhật ký gỡ lỗi SMS',
+                              style: GoogleFonts.robotoMono(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF4FFFB0),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.refresh, color: Colors.white70, size: 20),
+                            tooltip: 'Làm mới',
+                            onPressed: _loadDebugLog,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.white70, size: 20),
+                            tooltip: 'Xóa nhật ký',
+                            onPressed: () async {
+                              await SmsDebugLog.clear();
+                              await _loadDebugLog();
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await SmsDetectionService.instance.retryInit();
+                              await _loadDebugLog();
+                            },
+                            icon: const Icon(Icons.security, size: 16),
+                            label: const Text('Xin quyền lại'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF333333),
+                              foregroundColor: Colors.white,
+                              textStyle: GoogleFonts.robotoMono(fontSize: 12),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final msgs = await SmsDetectionService.testReadInbox();
+                              await _loadDebugLog();
+                              if (context.mounted) {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('5 SMS gần nhất'),
+                                    content: SingleChildScrollView(
+                                      child: Text(msgs.isEmpty ? '(trống)' : msgs.join('\n\n')),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Đóng'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.inbox, size: 16),
+                            label: const Text('Đọc hộp thư'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF333333),
+                              foregroundColor: Colors.white,
+                              textStyle: GoogleFonts.robotoMono(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        height: 220,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: _debugLog.isEmpty
+                            ? Text(
+                                '(chưa có nhật ký — mở app sẽ ghi log)',
+                                style: GoogleFonts.robotoMono(
+                                  fontSize: 11,
+                                  color: Colors.white38,
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: _debugLog.length,
+                                itemBuilder: (_, i) => Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 1),
+                                  child: Text(
+                                    _debugLog[i],
+                                    style: GoogleFonts.robotoMono(
+                                      fontSize: 11,
+                                      color: _debugLog[i].contains('ERROR') ||
+                                              _debugLog[i].contains('DENIED')
+                                          ? const Color(0xFFFF6B6B)
+                                          : _debugLog[i].contains('INCOMING') ||
+                                                  _debugLog[i].contains('CẢNH BÁO')
+                                              ? const Color(0xFF4FFFB0)
+                                              : Colors.white70,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
                     ],
                   ),

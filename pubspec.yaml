@@ -20,9 +20,8 @@ dependencies:
   share_plus: ^12.0.2
   shared_preferences: ^2.3.1
   speech_to_text: ^7.3.0
-  telephony: ^0.2.0
-  permission_handler: ^12.0.3
-  web_socket_channel: ^3.0.3
+  android_sms_reader: ^0.0.6
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
