@@ -529,7 +529,7 @@ Key dependencies include:
 - **FastAPI** — MIT
 - **Pydantic** — MIT
 - **OpenAI Python SDK** — MIT (used to call Google Gemini via OpenAI-compatible endpoint)
-- **Google Gemini 2.5 Flash** — accessed via Google AI Studio API; subject to [Google Generative AI Terms of Service](https://ai.google.dev/terms)
+- **Google Gemini 3.1 Flash Lite** — accessed via Google AI Studio API; subject to [Google Generative AI Terms of Service](https://ai.google.dev/terms)
 
 ### AI-generated code disclosure
 
