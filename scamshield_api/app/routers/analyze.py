@@ -4,7 +4,8 @@ from openai import AsyncOpenAI
 import json
 import logging
 
-from ..models.schemas import AnalyzeRequest, ContractRequest, ChatRequest, AnalysisResponse
+import httpx
+from ..models.schemas import AnalyzeRequest, ContractRequest, ChatRequest, DetectScamRequest, AnalysisResponse
 from ..agents.prompts import JUSTFUL_SYSTEM_PROMPT
 from ..config import settings
 
@@ -172,3 +173,37 @@ async def contract(req: ContractRequest):
         },
     ]
     return await _call_model(messages)
+
+
+@router.post("/detect-scam", response_model=AnalysisResponse)
+async def detect_scam(req: DetectScamRequest):
+    messages = [
+        {"role": "system", "content": JUSTFUL_SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": _build_content(
+                f"Phân tích SMS sau từ số {req.sender}:\n{req.body}",
+                None,
+            ),
+        },
+    ]
+    result = await _call_model(messages)
+
+    # Forward to Telegram bot if risk is medium or above
+    if result.risk_level in ("medium", "high", "critical"):
+        try:
+            async with httpx.AsyncClient(timeout=10) as http:
+                await http.post(
+                    f"{settings.telegram_bot_url}/notify",
+                    json={
+                        "sender": req.sender,
+                        "body": req.body,
+                        "risk_level": result.risk_level,
+                        "explanation": result.explanation,
+                    },
+                )
+            logger.info("Telegram notification sent for %s", req.sender)
+        except Exception as e:
+            logger.error("Failed to notify Telegram bot: %s", e)
+
+    return result

@@ -17,6 +17,11 @@ class ChatRequest(BaseModel):
     history: list[dict] = []
 
 
+class DetectScamRequest(BaseModel):
+    sender: str
+    body: str
+
+
 class RedFlag(BaseModel):
     type: str
     detail: str
