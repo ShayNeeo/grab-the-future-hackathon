@@ -6,11 +6,14 @@ import 'package:justful/src/services/sms_detection_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Fire-and-forget: don't block app startup on SMS service init.
-  // The SMS service can initialize in the background; the app UI
-  // should always render regardless of permission/plugin status.
-  SmsDetectionService.instance.init().catchError((e) {
-    debugPrint('[Main] SmsDetectionService.init() failed: $e');
+  // IMPORTANT: defer SMS service init until AFTER the first frame.
+  // Permission dialogs (SMS / Phone / Notifications) need a resumed
+  // Activity to attach to. If we request before runApp(), the Activity
+  // isn't attached yet and the system dialog silently never appears.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    SmsDetectionService.instance.init().catchError((e) {
+      debugPrint('[Main] SmsDetectionService.init() failed: $e');
+    });
   });
 
   runApp(const ProviderScope(child: JustfulApp()));
