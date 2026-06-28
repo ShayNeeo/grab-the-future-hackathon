@@ -84,7 +84,7 @@ def _build_content(text: str, image_base64: str | None) -> list[dict]:
 async def _call_model(messages: list[dict]) -> AnalysisResponse:
     try:
         resp = await client.chat.completions.create(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             response_format={"type": "json_object"},
             messages=messages,
             max_tokens=4096,
@@ -118,7 +118,7 @@ async def _call_model(messages: list[dict]) -> AnalysisResponse:
 async def _stream_model(messages: list[dict]):
     try:
         resp = await client.chat.completions.create(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             response_format={"type": "json_object"},
             messages=messages,
             max_tokens=4096,

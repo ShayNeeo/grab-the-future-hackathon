@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-MODEL = "models/gemini-2.0-flash-live-001"
+MODEL = "models/gemini-3-flash-live"
 
 SYSTEM_PROMPT = """Bạn là Justful, AI bảo vệ người cao tuổi Việt Nam khỏi lừa đảo.
 Bạn đang nghe trực tiếp một cuộc điện thoại. Nhiệm vụ: phân tích real-time và cảnh báo nếu phát hiện dấu hiệu lừa đảo.
