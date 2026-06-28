@@ -17,7 +17,7 @@ class ScamResultCardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Kết quả phân tích',
-          style: GoogleFonts.beVietnamPro(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
@@ -77,7 +77,7 @@ class ScamResultCardScreen extends StatelessWidget {
                               ),
                               child: Text(
                                 analysis.caseType,
-                                style: GoogleFonts.beVietnamPro(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.shieldTeal,
@@ -88,7 +88,7 @@ class ScamResultCardScreen extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               'Giai đoạn: ${analysis.stage}',
-                              style: GoogleFonts.beVietnamPro(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.textSecondary,
@@ -100,7 +100,7 @@ class ScamResultCardScreen extends StatelessWidget {
                           // ── Red Flags ──
                           Text(
                             'Dấu hiệu nguy hiểm phát hiện được',
-                            style: GoogleFonts.beVietnamPro(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
@@ -149,7 +149,7 @@ class ScamResultCardScreen extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Text(
                                         'Kỹ thuật thao túng tâm lý',
-                                        style: GoogleFonts.beVietnamPro(
+                                        style: GoogleFonts.plusJakartaSans(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: AppColors.textPrimary,
@@ -175,7 +175,7 @@ class ScamResultCardScreen extends StatelessWidget {
                             const SizedBox(height: 24),
                             Text(
                               'Hành động được đề xuất',
-                              style: GoogleFonts.beVietnamPro(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
@@ -200,7 +200,7 @@ class ScamResultCardScreen extends StatelessWidget {
                                     Expanded(
                                       child: Text(
                                         action,
-                                        style: GoogleFonts.beVietnamPro(
+                                        style: GoogleFonts.plusJakartaSans(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w400,
                                           color: AppColors.textPrimary,
@@ -238,7 +238,7 @@ class ScamResultCardScreen extends StatelessWidget {
                 onPressed: () {},
                 child: Text(
                   '📤 Gửi cho người thân',
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.shieldTeal,
@@ -274,7 +274,7 @@ class _NoFlagsNotice extends StatelessWidget {
           Expanded(
             child: Text(
               'Không phát hiện dấu hiệu lừa đảo rõ ràng',
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: AppColors.alertGreen,
@@ -316,7 +316,7 @@ class _RedFlagRow extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$number',
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -330,7 +330,7 @@ class _RedFlagRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -340,7 +340,7 @@ class _RedFlagRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
                       color: AppColors.textSecondary,
@@ -375,7 +375,7 @@ class _TacticPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.beVietnamPro(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,

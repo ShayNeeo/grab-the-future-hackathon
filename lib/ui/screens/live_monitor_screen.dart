@@ -239,7 +239,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                 children: [
                   Text(
                     'Giám sát trực tiếp',
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -248,7 +248,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                   const SizedBox(height: 8),
                   Text(
                     'Đặt điện thoại loa ngoài — AI sẽ phân tích cuộc gọi real-time',
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       color: AppColors.textSecondary,
                     ),
@@ -292,7 +292,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                                     : _riskLevel == 'high'
                                         ? 'Nguy hiểm'
                                         : 'Cực kỳ nguy hiểm',
-                            style: GoogleFonts.beVietnamPro(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: _riskColor(_riskLevel),
@@ -303,7 +303,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                               _currentTranscript.length > 80
                                   ? '${_currentTranscript.substring(0, 80)}...'
                                   : _currentTranscript,
-                              style: GoogleFonts.beVietnamPro(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
                                 color: AppColors.textSecondary,
                               ),
@@ -336,7 +336,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                             _isMonitoring
                                 ? 'Đang nghe...'
                                 : 'Nhấn nút bên dưới để bắt đầu',
-                            style: GoogleFonts.beVietnamPro(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               color: AppColors.textSecondary,
                             ),
@@ -376,7 +376,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                                   children: [
                                     Text(
                                       event.message,
-                                      style: GoogleFonts.beVietnamPro(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 16,
                                         color: AppColors.textPrimary,
                                       ),
@@ -384,7 +384,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen>
                                     const SizedBox(height: 4),
                                     Text(
                                       '${event.time.hour}:${event.time.minute.toString().padLeft(2, '0')}:${event.time.second.toString().padLeft(2, '0')}',
-                                      style: GoogleFonts.beVietnamPro(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 13,
                                         color: AppColors.textSecondary,
                                       ),

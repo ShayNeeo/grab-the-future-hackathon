@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:justful/src/models/analysis_request.dart';
 import 'package:justful/src/models/analysis_response.dart';
+import 'package:justful/src/models/chat_history_item.dart';
 import 'package:justful/src/services/justful_api.dart';
 
 final apiProvider = Provider<JustfulApi>((ref) => JustfulApi());
@@ -69,6 +70,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
     if (_isSending) return;
     _isSending = true;
     final current = state.valueOrNull ?? [];
+    // Capture history BEFORE updating state — otherwise _history includes the
+    // new user message and the backend receives it twice (once in history, once in text).
+    final historySnapshot = _history;
     final userMsg = ChatMessage(
       role: 'user',
       text: text,
@@ -80,7 +84,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
       isStreaming: true,
       thinkingText: 'Đang chuẩn bị phân tích...',
     );
-    
+
     // Set UI state with user and empty streaming assistant messages
     final withUser = [...current, userMsg, assistantMsg];
     state = AsyncValue.data(withUser);
@@ -89,7 +93,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
       final stream = _api.analyzeStream(AnalysisRequest(
         text: text,
         imageBase64: imageBase64,
-        history: _history,
+        history: historySnapshot,
       ));
 
       String accumulated = '';
@@ -149,7 +153,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
 
       final hasFollowUps = response.followUpQuestions.isNotEmpty;
       final finalMsg = assistantMsg.copyWith(
-        text: response.explanation, // friendly explanation instead of suggested_reply
+        text: response.explanation,
         response: response,
         followUpQuestions: hasFollowUps ? response.followUpQuestions : const [],
         isStreaming: false,
@@ -160,6 +164,15 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
         updatedList[updatedList.length - 1] = finalMsg;
         state = AsyncValue.data(updatedList);
       }
+
+      // Persist to history so the home dashboard shows real recent cases
+      ChatHistoryItem.save(ChatHistoryItem(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        caseType: response.caseType,
+        riskLevel: response.riskLevel.name,
+        explanation: response.explanation,
+        timestamp: DateTime.now(),
+      ));
     } catch (e) {
       final updatedList = List<ChatMessage>.from(state.valueOrNull ?? []);
       if (updatedList.isNotEmpty) {

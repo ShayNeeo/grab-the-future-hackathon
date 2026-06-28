@@ -5,49 +5,49 @@ import 'package:justful/core/theme/app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  static TextStyle get display => GoogleFonts.beVietnamPro(
+  static TextStyle get display => GoogleFonts.plusJakartaSans(
         fontSize: 34,
         fontWeight: FontWeight.bold,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get h1 => GoogleFonts.beVietnamPro(
+  static TextStyle get h1 => GoogleFonts.plusJakartaSans(
         fontSize: 28,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get h2 => GoogleFonts.beVietnamPro(
+  static TextStyle get h2 => GoogleFonts.plusJakartaSans(
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get body => GoogleFonts.beVietnamPro(
+  static TextStyle get body => GoogleFonts.plusJakartaSans(
         fontSize: 18,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get label => GoogleFonts.beVietnamPro(
+  static TextStyle get label => GoogleFonts.plusJakartaSans(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get caption => GoogleFonts.beVietnamPro(
+  static TextStyle get caption => GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: AppColors.textSecondary,
       );
 
-  static TextStyle get chatBubble => GoogleFonts.beVietnamPro(
+  static TextStyle get chatBubble => GoogleFonts.plusJakartaSans(
         fontSize: 18,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get chatBubbleWhite => GoogleFonts.beVietnamPro(
+  static TextStyle get chatBubbleWhite => GoogleFonts.plusJakartaSans(
         fontSize: 18,
         fontWeight: FontWeight.w400,
         color: AppColors.surfaceWhite,

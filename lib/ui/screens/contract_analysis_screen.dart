@@ -13,7 +13,7 @@ class ContractAnalysisScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Phân tích Hợp đồng',
-          style: GoogleFonts.beVietnamPro(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
@@ -52,7 +52,7 @@ class ContractAnalysisScreen extends StatelessWidget {
                     const SizedBox(width: 10),
                     Text(
                       'Hợp đồng: RỦI RO CAO',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -67,7 +67,7 @@ class ContractAnalysisScreen extends StatelessWidget {
                       ),
                       child: Text(
                         '3/7 mục',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -82,7 +82,7 @@ class ContractAnalysisScreen extends StatelessWidget {
               // ── Checklist Section ──
               Text(
                 'Danh sách kiểm tra hợp đồng',
-                style: GoogleFonts.beVietnamPro(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -152,7 +152,7 @@ class ContractAnalysisScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Điều khoản nguy hiểm',
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -167,7 +167,7 @@ class ContractAnalysisScreen extends StatelessWidget {
                     ),
                     child: Text(
                       '3',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -199,7 +199,7 @@ class ContractAnalysisScreen extends StatelessWidget {
               // ── Questions to ask ──
               Text(
                 'Câu hỏi cần hỏi bên bán',
-                style: GoogleFonts.beVietnamPro(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -271,7 +271,7 @@ class _CheckItem extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
@@ -280,7 +280,7 @@ class _CheckItem extends StatelessWidget {
           ),
           Text(
             result,
-            style: GoogleFonts.beVietnamPro(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: resultColor,
@@ -329,7 +329,7 @@ class _ExpandableClauseState extends State<_ExpandableClause> {
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
@@ -344,7 +344,7 @@ class _ExpandableClauseState extends State<_ExpandableClause> {
                     ),
                     child: Text(
                       'Nguy hiểm',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: AppColors.alertRed,
@@ -371,7 +371,7 @@ class _ExpandableClauseState extends State<_ExpandableClause> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
                 widget.explanation,
-                style: GoogleFonts.beVietnamPro(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   color: AppColors.textSecondary,
@@ -412,7 +412,7 @@ class _NumberedQuestion extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$number',
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -423,7 +423,7 @@ class _NumberedQuestion extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textPrimary,

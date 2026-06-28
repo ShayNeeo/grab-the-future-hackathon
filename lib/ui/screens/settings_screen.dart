@@ -13,7 +13,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Cài đặt',
-          style: GoogleFonts.beVietnamPro(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
@@ -58,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Text(
                         'BL',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -72,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Bà Lan',
-                            style: GoogleFonts.beVietnamPro(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -81,7 +81,7 @@ class SettingsScreen extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Thành viên từ 2024',
-                            style: GoogleFonts.beVietnamPro(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
                               color: Colors.white.withValues(alpha: 0.8),
@@ -105,7 +105,7 @@ class SettingsScreen extends StatelessWidget {
                           horizontal: 16,
                           vertical: 10,
                         ),
-                        textStyle: GoogleFonts.beVietnamPro(
+                        textStyle: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -166,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'Cao',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.shieldTeal,
@@ -278,7 +278,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: GoogleFonts.beVietnamPro(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
@@ -336,7 +336,7 @@ class _SettingsTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textPrimary,
@@ -346,7 +346,7 @@ class _SettingsTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,
@@ -400,7 +400,7 @@ class _SegmentButton extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.beVietnamPro(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 13,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           color: isSelected ? Colors.white : AppColors.textSecondary,
