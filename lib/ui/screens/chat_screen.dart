@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:justful/app/routes.dart';
 import 'package:justful/core/theme/app_colors.dart';
 import 'package:justful/src/providers/chat_provider.dart' as p;
 import 'package:justful/src/models/analysis_response.dart';
 import 'package:justful/ui/widgets/bottom_nav_shell.dart';
+import 'package:justful/ui/widgets/risk_badge.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -36,7 +36,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   static const _greeting = _ChatMessage(
     isAi: true,
     text:
-        'Xin chào bà! 🛡️ Bạn nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
+        'Xin chào bác! 🛡️ Bác nhận được tin nhắn, hình ảnh hay cuộc gọi nào đáng ngờ không? Hãy gửi cho tôi kiểm tra nhé.',
     time: '',
   );
 
@@ -327,15 +327,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final wasStreaming = prevMsgs.isNotEmpty && prevMsgs.last.isStreaming;
 
       if (wasStreaming && !lastMsg.isStreaming && lastMsg.response != null) {
-        // Only navigate to result card when there are NO follow-up questions
-        // (i.e., the agentic loop is complete)
-        if (lastMsg.followUpQuestions.isEmpty) {
-          Navigator.pushNamed(
-            context,
-            AppRoutes.scamResult,
-            arguments: lastMsg.response,
-          );
-        }
         _scrollToBottom();
       }
     });
@@ -678,6 +669,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       }
                     ),
                   ],
+                  if (msg.response != null && msg.followUpQuestions.isEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildInlineResultCard(msg.response!),
+                  ],
                   if (msg.followUpQuestions.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     _buildFollowUpChips(msg.followUpQuestions),
@@ -757,6 +752,140 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return 'AI đang quét chi tiết các điều khoản hợp đồng/tài liệu...';
     }
     return 'Lá chắn Justful đang kiểm tra độ an toàn cho bác...';
+  }
+
+  Widget _buildInlineResultCard(AnalysisResponse response) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RiskBanner(level: response.riskLevel),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dấu hiệu nguy hiểm phát hiện được',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (response.redFlags.isEmpty)
+                  _buildNoFlagsNotice()
+                else
+                  Column(
+                    children: [
+                      for (int i = 0; i < response.redFlags.length; i++) ...[
+                        if (i > 0) const Divider(height: 1, color: AppColors.divider),
+                        _buildRedFlagRow(i + 1, response.redFlags[i].type, response.redFlags[i].detail),
+                      ],
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoFlagsNotice() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.alertGreen.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.alertGreen.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_outline_rounded, color: AppColors.alertGreen, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Không phát hiện dấu hiệu lừa đảo rõ ràng',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: AppColors.alertGreen,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRedFlagRow(int number, String title, String description) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      color: AppColors.redTint,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: const BoxDecoration(
+              color: AppColors.alertRed,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$number',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Renders follow-up questions as tappable suggestion chips.
@@ -947,7 +1076,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chào bà,',
+                  'Chào bác,',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -956,7 +1085,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Bà hãy nhấn nút tròn to ở giữa màn hình rồi đọc tin nhắn hoặc kể lại sự việc nghi ngờ lừa đảo. Con sẽ kiểm tra ngay giúp bà!',
+                  'Bác hãy nhấn nút tròn to ở giữa màn hình rồi đọc tin nhắn hoặc kể lại sự việc nghi ngờ lừa đảo. Con sẽ kiểm tra ngay giúp bác!',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -1045,7 +1174,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             child: Text(
               _transcribedWords.isEmpty
-                  ? (_isListening ? 'Bà hãy nói đi, con đang nghe...' : 'Giọng nói của bà sẽ xuất hiện ở đây...')
+                  ? (_isListening ? 'Bác hãy nói đi, con đang nghe...' : 'Giọng nói của bác sẽ xuất hiện ở đây...')
                   : _transcribedWords,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 20,
