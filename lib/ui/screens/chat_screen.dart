@@ -317,20 +317,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final chatState = ref.watch(p.chatProvider);
 
     ref.listen<AsyncValue<List<p.ChatMessage>>>(p.chatProvider, (prev, next) {
-      if (prev?.isLoading == true && next.hasValue) {
-        final msgs = next.value!;
-        if (msgs.isNotEmpty && msgs.last.response != null) {
-          // Only navigate to result card when there are NO follow-up questions
-          // (i.e., the agentic loop is complete)
-          if (msgs.last.followUpQuestions.isEmpty) {
-            Navigator.pushNamed(
-              context,
-              AppRoutes.scamResult,
-              arguments: msgs.last.response,
-            );
-          }
-          _scrollToBottom();
+      if (!next.hasValue) return;
+      final msgs = next.value!;
+      if (msgs.isEmpty) return;
+
+      final lastMsg = msgs.last;
+      final prevMsgs = prev?.valueOrNull ?? [];
+      // Detect when the last assistant message transitions from streaming → done
+      final wasStreaming = prevMsgs.isNotEmpty && prevMsgs.last.isStreaming;
+
+      if (wasStreaming && !lastMsg.isStreaming && lastMsg.response != null) {
+        // Only navigate to result card when there are NO follow-up questions
+        // (i.e., the agentic loop is complete)
+        if (lastMsg.followUpQuestions.isEmpty) {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.scamResult,
+            arguments: lastMsg.response,
+          );
         }
+        _scrollToBottom();
       }
     });
 
@@ -372,7 +378,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Justful AI',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary)),
@@ -387,7 +393,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               shape: BoxShape.circle)),
                       const SizedBox(width: 5),
                       Text('Đang hoạt động',
-                          style: GoogleFonts.beVietnamPro(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 13, color: AppColors.alertGreen)),
                     ],
                   ),
@@ -467,7 +473,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           color: AppColors.shieldTeal.withValues(alpha: 0.6)),
                       const SizedBox(height: 8),
                       Text('📎 ${msg.imageName}',
-                          style: GoogleFonts.beVietnamPro(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 14, color: AppColors.textSecondary)),
                     ],
                   ),
@@ -485,7 +491,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text('Đang phân tích...',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
                             fontStyle: FontStyle.italic,
                             color: AppColors.shieldTeal)),
@@ -538,7 +544,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(msg.text,
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           fontStyle: FontStyle.italic,
                           color: AppColors.shieldTeal)),
@@ -575,7 +581,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             bottomRight: Radius.circular(18)),
                       ),
                       child: Text(msg.text,
-                          style: GoogleFonts.beVietnamPro(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w400,
                               color: AppColors.textPrimary)),
@@ -606,7 +612,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           Expanded(
                             child: Text(
                               _getFriendlyThinkingStatus(msg.thinkingText),
-                              style: GoogleFonts.beVietnamPro(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.shieldTeal,
@@ -648,7 +654,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     isBlockAdvice ? 'Khuyên dùng an toàn:' : 'Gợi ý trả lời đối phương:',
-                                    style: GoogleFonts.beVietnamPro(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                       color: isBlockAdvice ? AppColors.alertRed : AppColors.shieldTeal,
@@ -659,7 +665,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 isBlockAdvice ? 'Bác nên: ${msg.response!.suggestedReply}' : '"${msg.response!.suggestedReply}"',
-                                style: GoogleFonts.beVietnamPro(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   fontStyle: isBlockAdvice ? FontStyle.normal : FontStyle.italic,
@@ -679,7 +685,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   if (msg.time.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(msg.time,
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 12, color: AppColors.textSecondary)),
                   ],
                 ],
@@ -712,7 +718,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         bottomRight: Radius.circular(18)),
                   ),
                   child: Text(msg.text,
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
                           color: Colors.white)),
@@ -720,7 +726,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 if (msg.time.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(msg.time,
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ],
@@ -770,7 +776,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               const SizedBox(width: 4),
               Text(
                 'Cho tôi biết thêm:',
-                style: GoogleFonts.beVietnamPro(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppColors.shieldTeal.withValues(alpha: 0.7),
@@ -800,7 +806,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   child: Text(
                     q,
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: AppColors.shieldTeal,
@@ -858,7 +864,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Nói chuyện',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: _useVoiceMode ? Colors.white : AppColors.textSecondary,
@@ -902,7 +908,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Nhắn tin',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: !_useVoiceMode ? Colors.white : AppColors.textSecondary,
@@ -942,7 +948,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               children: [
                 Text(
                   'Chào bà,',
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.shieldTeal,
@@ -951,7 +957,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Bà hãy nhấn nút tròn to ở giữa màn hình rồi đọc tin nhắn hoặc kể lại sự việc nghi ngờ lừa đảo. Con sẽ kiểm tra ngay giúp bà!',
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textPrimary,
@@ -1003,7 +1009,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _isListening ? 'Đang lắng nghe... Chạm để Dừng' : 'Chạm vào để Nói',
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: _isListening ? Colors.redAccent : AppColors.textPrimary,
@@ -1016,7 +1022,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           // Preview transcribed text area
           Text(
             'Nội dung nhận diện giọng nói:',
-            style: GoogleFonts.beVietnamPro(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
@@ -1041,7 +1047,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               _transcribedWords.isEmpty
                   ? (_isListening ? 'Bà hãy nói đi, con đang nghe...' : 'Giọng nói của bà sẽ xuất hiện ở đây...')
                   : _transcribedWords,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 20,
                 color: _transcribedWords.isEmpty ? AppColors.textSecondary : AppColors.textPrimary,
                 height: 1.5,
@@ -1077,7 +1083,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     child: Text(
                       'Xóa nói lại',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: _transcribedWords.isEmpty
@@ -1115,7 +1121,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     child: Text(
                       'Gửi kiểm tra',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1160,7 +1166,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Text(
               'Chào bạn! Tôi ở đây để giúp',
               textAlign: TextAlign.center,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -1170,7 +1176,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Text(
               'Gửi tin nhắn, ảnh chụp hoặc ghi âm\ntôi sẽ kiểm tra giúp bạn ngay',
               textAlign: TextAlign.center,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
@@ -1311,11 +1317,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 16, color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         hintText: 'Nhập hoặc dán nội dung...',
-                        hintStyle: GoogleFonts.beVietnamPro(
+                        hintStyle: GoogleFonts.plusJakartaSans(
                             fontSize: 16, color: AppColors.textSecondary),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
@@ -1418,7 +1424,7 @@ class _SuggestionChip extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textPrimary,

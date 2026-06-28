@@ -108,7 +108,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                       ? 'Đang trong giai đoạn suy nghĩ'
                       : 'Chưa bắt đầu giai đoạn suy nghĩ',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 26,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary),
@@ -119,7 +119,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                       ? 'Đừng ký hoặc chuyển tiền\ntrong thời gian này'
                       : 'Bấm bên dưới để bắt đầu đếm 48 giờ suy nghĩ',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w400,
                       color: AppColors.textSecondary,
@@ -142,7 +142,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                     children: [
                       Text(
                         isActive ? _formatDuration(remaining) : '48:00:00',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
                             color: AppColors.shieldTeal,
@@ -150,7 +150,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                       ),
                       const SizedBox(height: 4),
                       Text('giờ : phút : giây',
-                          style: GoogleFonts.beVietnamPro(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 14, color: AppColors.textSecondary)),
                     ],
                   ),
@@ -173,7 +173,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Tại sao cần chờ?',
-                          style: GoogleFonts.beVietnamPro(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary)),
@@ -217,7 +217,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                     onPressed: () =>
                         ref.read(coolingOffProvider.notifier).cancel(),
                     child: Text('Tôi đã an toàn, hủy timer',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                             color: AppColors.textSecondary)),
                   ),
                 ],
@@ -225,7 +225,7 @@ class _CoolingOffTimerScreenState extends ConsumerState<CoolingOffTimerScreen>
                 if (isActive)
                   Text(
                     'Bộ đếm sẽ nhắc bạn khi hết giờ',
-                    style: GoogleFonts.beVietnamPro(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 14, color: AppColors.textSecondary),
                   ),
                 const SizedBox(height: 32),
@@ -303,7 +303,7 @@ class _ReasonBullet extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: GoogleFonts.beVietnamPro(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textPrimary,

@@ -31,7 +31,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Gia đình của tôi',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -40,7 +40,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Người thân sẽ nhận cảnh báo khi bạn cần',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: Colors.white.withValues(alpha: 0.8),
@@ -110,7 +110,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         'Thêm thành viên gia đình',
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppColors.shieldTeal,
@@ -138,7 +138,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Tự động thông báo khi phát hiện rủi ro cao',
-                            style: GoogleFonts.beVietnamPro(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
@@ -161,7 +161,7 @@ class FamilyGuardianScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Khi phát hiện rủi ro cao, tất cả người giám hộ sẽ nhận thông báo ngay lập tức.',
-                      style: GoogleFonts.beVietnamPro(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,
@@ -216,7 +216,7 @@ class _GuardianCard extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -231,7 +231,7 @@ class _GuardianCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.beVietnamPro(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -251,7 +251,7 @@ class _GuardianCard extends StatelessWidget {
                       ),
                       child: Text(
                         relationship,
-                        style: GoogleFonts.beVietnamPro(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.shieldTeal,
@@ -272,7 +272,7 @@ class _GuardianCard extends StatelessWidget {
                         const SizedBox(width: 5),
                         Text(
                           status,
-                          style: GoogleFonts.beVietnamPro(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: statusColor,

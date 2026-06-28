@@ -78,7 +78,7 @@ class RiskBadge extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             risk.label,
-            style: GoogleFonts.beVietnamPro(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: fontSize,
               fontWeight: FontWeight.w700,
               color: risk.text,
@@ -112,7 +112,7 @@ class RiskBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             risk.label,
-            style: GoogleFonts.beVietnamPro(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: risk.text,

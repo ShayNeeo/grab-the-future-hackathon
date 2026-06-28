@@ -20,38 +20,38 @@ class AppTheme {
         error: AppColors.alertRed,
         onError: AppColors.surfaceWhite,
       ),
-      textTheme: GoogleFonts.beVietnamProTextTheme().copyWith(
-        displayLarge: GoogleFonts.beVietnamPro(
+      textTheme: GoogleFonts.plusJakartaSansTextTheme().copyWith(
+        displayLarge: GoogleFonts.plusJakartaSans(
           fontSize: 34,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
-        headlineLarge: GoogleFonts.beVietnamPro(
+        headlineLarge: GoogleFonts.plusJakartaSans(
           fontSize: 28,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        headlineMedium: GoogleFonts.beVietnamPro(
+        headlineMedium: GoogleFonts.plusJakartaSans(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        bodyLarge: GoogleFonts.beVietnamPro(
+        bodyLarge: GoogleFonts.plusJakartaSans(
           fontSize: 18,
           fontWeight: FontWeight.w400,
           color: AppColors.textPrimary,
         ),
-        bodyMedium: GoogleFonts.beVietnamPro(
+        bodyMedium: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        labelLarge: GoogleFonts.beVietnamPro(
+        labelLarge: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        bodySmall: GoogleFonts.beVietnamPro(
+        bodySmall: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
@@ -62,7 +62,7 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.beVietnamPro(
+        titleTextStyle: GoogleFonts.plusJakartaSans(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -76,7 +76,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.beVietnamPro(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -90,7 +90,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.beVietnamPro(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -113,13 +113,13 @@ class AppTheme {
         indicatorColor: AppColors.shieldTealBg,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.beVietnamPro(
+            return GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.shieldTeal,
             );
           }
-          return GoogleFonts.beVietnamPro(
+          return GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppColors.textSecondary,

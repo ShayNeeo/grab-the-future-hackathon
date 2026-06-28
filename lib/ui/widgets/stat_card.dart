@@ -39,7 +39,7 @@ class StatCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
-                style: GoogleFonts.beVietnamPro(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: value.length > 3 ? 20 : 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -50,7 +50,7 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: GoogleFonts.beVietnamPro(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
